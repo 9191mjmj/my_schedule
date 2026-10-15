@@ -1,4 +1,26 @@
+# Dependencies
 node_modules/
-.vscode/
-*.log
+.pnp
+.pnp.js
+
+# Build & Distribution
 dist/
+build/
+out/
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

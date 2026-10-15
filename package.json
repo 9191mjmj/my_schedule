@@ -1,18 +1,44 @@
 {
-  "name": "schedule-app",
+  "name": "cug-schedule",
   "version": "1.0.0",
-  "description": "我的课表桌面应用",
+  "description": "中国地质大学（武汉）桌面课表应用",
+  "author": "CUG",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --win"
   },
   "dependencies": {
-    "axios": "^1.20.0",
-    "cors": "^2.8.6",
-    "express": "^5.3.0"
+    "axios": "^1.20.0"
   },
   "devDependencies": {
-    "electron": "^44.7.0"
+    "electron": "^44.7.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.cug.schedule",
+    "productName": "地大课表",
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "地大课表"
+    },
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "美化课表1.html",
+      "package.json"
+    ]
   }
 }
