@@ -1,0 +1,10 @@
+{
+  "appId": "com.cug.schedule",
+  "appName": "地大课表",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  }
+}

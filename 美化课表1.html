@@ -1768,9 +1768,17 @@ function loadCachedSchedule() {
   return false;
 }
 
+// 检测当前运行平台
+const isAndroidApp = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+
 async function loadSchedule() {
+  if (isAndroidApp) {
+    importSchedule();
+    return;
+  }
   if (!window.electronAPI || !window.electronAPI.getJwxtCookie) {
-    showToast('当前非 Electron 环境，无法抓取', 'warn');
+    showToast('正在打开地大教务登录...', 'info', 1500);
+    importSchedule();
     return;
   }
   showToast('正在连接教务系统检查会话...', 'info', 2000);
@@ -1788,11 +1796,28 @@ async function loadSchedule() {
 }
 
 async function fetchScheduleWithCookie(jsessionid, silent = false) {
-  console.log('🚀 调用主进程抓课表...');
   if (!silent) showToast('正在抓取教务系统最新课表...', 'info', 4000);
   try {
     const { xnm, xqm } = getSemesterConfig();
-    const result = await window.electronAPI.fetchSchedule({ jsessionid, xnm, xqm });
+    let result;
+
+    if (isAndroidApp && window.Capacitor.Plugins && window.Capacitor.Plugins.Jwxt) {
+      // 📱 手机 Android 原生抓取通道
+      const res = await window.Capacitor.Plugins.Jwxt.fetchSchedule({ jsessionid, xnm, xqm });
+      if (res && res.rawJson) {
+        const parsed = JSON.parse(res.rawJson);
+        const list = (parsed && parsed.kbList) || [];
+        result = { success: true, courses: list };
+      } else {
+        result = { success: false, message: '返回数据为空' };
+      }
+    } else if (window.electronAPI && window.electronAPI.fetchSchedule) {
+      // 💻 电脑 Electron 抓取通道
+      result = await window.electronAPI.fetchSchedule({ jsessionid, xnm, xqm });
+    } else {
+      throw new Error('未检测到原生通信通道');
+    }
+
     if (result.success) {
       allCourses = result.courses;
       try {
@@ -1807,16 +1832,7 @@ async function fetchScheduleWithCookie(jsessionid, silent = false) {
       showToast(`课表同步成功！共抓取 ${allCourses.length} 门课程`, 'success');
       return true;
     } else {
-      if (silent) {
-        console.log('💤 Cookie 已过期，请点击"导入课表"重新登录');
-      } else {
-        if (result.message && (result.message.includes('Cookie') || result.message.includes('失效'))) {
-          showToast('学校登录凭据已过期，正在打开登录窗口重新验证...', 'warn', 3500);
-          importSchedule();
-        } else {
-          showToast('抓取失败：' + result.message, 'error', 4000);
-        }
-      }
+      if (!silent) showToast('抓取失败：' + (result.message || '未知错误'), 'error', 4000);
       return false;
     }
   } catch (e) {
@@ -1828,41 +1844,52 @@ async function fetchScheduleWithCookie(jsessionid, silent = false) {
 
 // ============ 登录覆盖层与 Cookie 监听 ============
 function importSchedule() {
-  const overlay = document.getElementById('loginOverlay');
-  const wv = document.getElementById('loginWebview');
-  overlay.style.display = 'flex';
-
-  if (cookiePollTimer) {
-    clearInterval(cookiePollTimer);
-    cookiePollTimer = null;
+  if (isAndroidApp && window.Capacitor.Plugins && window.Capacitor.Plugins.Jwxt) {
+    // 📱 手机原生 WebView 浮窗认证
+    showToast('正在打开地大统一认证中心...', 'info', 2000);
+    window.Capacitor.Plugins.Jwxt.openLogin()
+      .then(res => {
+        if (res && res.jsessionid) {
+          showToast('登录成功，正在抓取课表...', 'success', 2500);
+          fetchScheduleWithCookie(res.jsessionid);
+        }
+      })
+      .catch(err => {
+        showToast('登录取消或失败: ' + err, 'warn', 3000);
+      });
+    return;
   }
 
-  wv.src = 'https://sfrz.cug.edu.cn/authserver/login?service=https%3A%2F%2Fi.cug.edu.cn%2Fweb%2F%3FCASLOGIN%3DCASLOGIN';
-
-  let isFetching = false;
-  const check = async () => {
-    if (isFetching || !window.electronAPI || !window.electronAPI.getJwxtCookie) return;
-    try {
-      const cookie = await window.electronAPI.getJwxtCookie();
-      if (cookie) {
-        isFetching = true;
-        console.log('✅ 拿到 Cookie:', cookie.substring(0, 20) + '...');
-        const ok = await fetchScheduleWithCookie(cookie);
-        if (!ok) {
-          isFetching = false; // 失败允许重试
-        }
-      }
-    } catch (e) {
-      console.error('检查 Cookie 失败:', e);
+  // 💻 电脑 Electron 登录弹层
+  const overlay = document.getElementById('loginOverlay');
+  const wv = document.getElementById('loginWebview');
+  if (overlay && wv) {
+    overlay.style.display = 'flex';
+    if (cookiePollTimer) {
+      clearInterval(cookiePollTimer);
+      cookiePollTimer = null;
     }
-  };
-
-  cookiePollTimer = setInterval(check, 1200);
-
-  if (!wv._listenerAttached) {
-    wv._listenerAttached = true;
-    wv.addEventListener('did-navigate', check);
-    wv.addEventListener('did-navigate-in-page', check);
+    wv.src = 'https://sfrz.cug.edu.cn/authserver/login?service=https%3A%2F%2Fi.cug.edu.cn%2Fweb%2F%3FCASLOGIN%3DCASLOGIN';
+    let isFetching = false;
+    const check = async () => {
+      if (isFetching || !window.electronAPI || !window.electronAPI.getJwxtCookie) return;
+      try {
+        const cookie = await window.electronAPI.getJwxtCookie();
+        if (cookie) {
+          isFetching = true;
+          const ok = await fetchScheduleWithCookie(cookie);
+          if (!ok) isFetching = false;
+        }
+      } catch (e) {
+        console.error('检查 Cookie 失败:', e);
+      }
+    };
+    cookiePollTimer = setInterval(check, 1200);
+    if (!wv._listenerAttached) {
+      wv._listenerAttached = true;
+      wv.addEventListener('did-navigate', check);
+      wv.addEventListener('did-navigate-in-page', check);
+    }
   }
 }
 

@@ -9,6 +9,9 @@
     "build": "electron-builder --win"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
     "axios": "^1.20.0"
   },
   "devDependencies": {
@@ -38,6 +41,7 @@
       "main.js",
       "preload.js",
       "美化课表1.html",
+      "index.html",
       "package.json"
     ]
   }

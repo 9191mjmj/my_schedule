@@ -16,7 +16,7 @@ function createMainWindow() {
       webviewTag: true
     }
   });
-  mainWindow.loadFile('美化课表1.html');
+  mainWindow.loadFile('index.html');
   //mainWindow.webContents.openDevTools();
 }
 
