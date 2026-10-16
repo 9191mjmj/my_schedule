@@ -35,8 +35,9 @@ jobs:
       - name: 🔄 同步 Web 资源至 Android 原生工程
         run: npx cap sync android
 
-      - name: 🔨 清除 Windows 换行符并编译 APK
+      - name: 🔨 接受 SDK 许可并编译 APK
         run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           cd android
           sed -i 's/\r$//' gradlew
           chmod +x gradlew
