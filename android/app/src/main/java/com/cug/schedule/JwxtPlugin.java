@@ -8,6 +8,7 @@ import android.os.Message;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
@@ -39,6 +40,32 @@ public class JwxtPlugin extends Plugin {
     private final Handler pollHandler = new Handler(Looper.getMainLooper());
     private Runnable pollRunnable;
 
+    public class JwxtBridge {
+        private final PluginCall savedCall;
+
+        public JwxtBridge(PluginCall call) {
+            this.savedCall = call;
+        }
+
+        @JavascriptInterface
+        public void onScheduleFetched(String rawJson) {
+            getActivity().runOnUiThread(() -> {
+                if (rawJson != null && rawJson.contains("kbList")) {
+                    stopCookiePolling();
+                    if (loginDialog != null && loginDialog.isShowing()) {
+                        loginDialog.dismiss();
+                        loginDialog = null;
+                    }
+                    JSObject ret = new JSObject();
+                    ret.put("success", true);
+                    ret.put("directData", true);
+                    ret.put("rawJson", rawJson);
+                    savedCall.resolve(ret);
+                }
+            });
+        }
+    }
+
     @PluginMethod
     public void openLogin(PluginCall call) {
         getActivity().runOnUiThread(() -> {
@@ -64,7 +91,7 @@ public class JwxtPlugin extends Plugin {
                 title.setLayoutParams(titleParams);
                 header.addView(title);
 
-                // 快捷“进入教务/同步课表”按钮
+                // 快捷“进入教务/立即抓取”按钮
                 Button btnAction = new Button(getActivity());
                 btnAction.setText("教务管理");
                 btnAction.setTextSize(12);
@@ -94,6 +121,9 @@ public class JwxtPlugin extends Plugin {
                 webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
                 webView.getSettings().setSupportMultipleWindows(true);
 
+                // 关键：挂载原生 JS 桥接通道，支持网页内部直传课表数据
+                webView.addJavascriptInterface(new JwxtBridge(call), "AppBridge");
+
                 // 关键：启用第三方 Cookie 与持久化 Cookie 接收
                 CookieManager cookieManager = CookieManager.getInstance();
                 cookieManager.setAcceptCookie(true);
@@ -101,8 +131,9 @@ public class JwxtPlugin extends Plugin {
 
                 btnAction.setOnClickListener(v -> {
                     String curUrl = webView.getUrl();
-                    if (curUrl != null && curUrl.contains("jwglxt")) {
-                        title.setText("⚡ 正在立即提取课表凭据...");
+                    if (curUrl != null && (curUrl.contains("jwglxt") || curUrl.contains("jwgl.cug.edu.cn"))) {
+                        title.setText("⚡ 正在立即提取课表数据...");
+                        injectFetchScript(webView);
                         checkCookies(call, webView);
                     } else {
                         title.setText("⚡ 正在触发进入教务管理...");
@@ -121,7 +152,7 @@ public class JwxtPlugin extends Plugin {
                     call.reject("已取消登录");
                 });
 
-                // 处理新窗口与多窗口重定向，直接在当前配置好的主 webView 中打开
+                // 处理新窗口与多窗口重定向，直接在当前主 webView 中打开
                 webView.setWebChromeClient(new WebChromeClient() {
                     @Override
                     public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
@@ -150,9 +181,10 @@ public class JwxtPlugin extends Plugin {
                                 title.setText("⚡ 登录成功！正在跳转教务管理...");
                                 btnAction.setText("点击进入教务");
                                 triggerClickJw(view);
-                            } else if (url.contains("jwglxt")) {
-                                title.setText("🎉 已进入教务系统！正在同步课表...");
-                                btnAction.setText("立即同步");
+                            } else if (url.contains("jwglxt") || url.contains("jwgl.cug.edu.cn")) {
+                                title.setText("🎉 已进入教务系统！正在抓取课表...");
+                                btnAction.setText("立即抓取课表");
+                                injectFetchScript(view);
                                 checkCookies(call, view);
                             }
                         }
@@ -205,6 +237,27 @@ public class JwxtPlugin extends Plugin {
         webView.evaluateJavascript(js, null);
     }
 
+    private void injectFetchScript(WebView view) {
+        String js = "javascript:(function(){" +
+                "if(window.__jw_fetching) return;" +
+                "window.__jw_fetching = true;" +
+                "var payload = 'xnm=2026&xqm=3&kzlx=ck&xsdm=&kclbdm=&kclxdm=';" +
+                "fetch('/jwglxt/kbcx/xskbcx_cxXsgrkb.html?gnmkdm=N2151', {" +
+                "  method: 'POST'," +
+                "  headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }," +
+                "  body: payload" +
+                "}).then(function(r){ return r.text(); })" +
+                ".then(function(text){" +
+                "  if(text && text.indexOf('kbList') !== -1){" +
+                "    if(window.AppBridge) window.AppBridge.onScheduleFetched(text);" +
+                "  } else {" +
+                "    window.__jw_fetching = false;" +
+                "  }" +
+                "}).catch(function(err){ window.__jw_fetching = false; });" +
+                "})()";
+        view.evaluateJavascript(js, null);
+    }
+
     private void startCookiePolling(PluginCall call) {
         stopCookiePolling();
         pollRunnable = new Runnable() {
@@ -231,7 +284,6 @@ public class JwxtPlugin extends Plugin {
         CookieManager cm = CookieManager.getInstance();
         String currentUrl = (webView != null) ? webView.getUrl() : null;
 
-        // 覆盖所有可能的正方教务系统 Path（Path=/jwglxt）与顶级域名
         String[] testUrls = new String[] {
                 currentUrl,
                 "https://jwgl.cug.edu.cn/jwglxt/",

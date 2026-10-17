@@ -1849,6 +1849,21 @@ function importSchedule() {
     showToast('正在打开地大统一认证中心...', 'info', 2000);
     window.Capacitor.Plugins.Jwxt.openLogin()
       .then(res => {
+        if (res && res.directData && res.rawJson) {
+          try {
+            const parsed = JSON.parse(res.rawJson);
+            allCourses = (parsed && parsed.kbList) || [];
+            localStorage.setItem('my_schedule_cache', JSON.stringify(allCourses));
+            localStorage.setItem('my_schedule_cache_time', new Date().toLocaleString());
+            closeLoginOverlay();
+            initWeekSelector();
+            filterAndRender();
+            showToast(`课表同步成功！共抓取 ${allCourses.length} 门课程`, 'success', 3500);
+            return;
+          } catch(err) {
+            console.error('解析课表数据失败:', err);
+          }
+        }
         if (res && res.jsessionid) {
           showToast('登录成功，正在抓取课表...', 'success', 2500);
           fetchScheduleWithCookie(res.jsessionid, false, res.fullCookies || '');
