@@ -1795,7 +1795,7 @@ async function loadSchedule() {
   }
 }
 
-async function fetchScheduleWithCookie(jsessionid, silent = false) {
+async function fetchScheduleWithCookie(jsessionid, silent = false, fullCookies = '') {
   if (!silent) showToast('正在抓取教务系统最新课表...', 'info', 4000);
   try {
     const { xnm, xqm } = getSemesterConfig();
@@ -1803,7 +1803,7 @@ async function fetchScheduleWithCookie(jsessionid, silent = false) {
 
     if (isAndroidApp && window.Capacitor.Plugins && window.Capacitor.Plugins.Jwxt) {
       // 📱 手机 Android 原生抓取通道
-      const res = await window.Capacitor.Plugins.Jwxt.fetchSchedule({ jsessionid, xnm, xqm });
+      const res = await window.Capacitor.Plugins.Jwxt.fetchSchedule({ jsessionid, fullCookies, xnm, xqm });
       if (res && res.rawJson) {
         const parsed = JSON.parse(res.rawJson);
         const list = (parsed && parsed.kbList) || [];
@@ -1851,7 +1851,7 @@ function importSchedule() {
       .then(res => {
         if (res && res.jsessionid) {
           showToast('登录成功，正在抓取课表...', 'success', 2500);
-          fetchScheduleWithCookie(res.jsessionid);
+          fetchScheduleWithCookie(res.jsessionid, false, res.fullCookies || '');
         }
       })
       .catch(err => {

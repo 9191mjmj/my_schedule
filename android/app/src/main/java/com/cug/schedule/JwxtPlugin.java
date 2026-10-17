@@ -28,11 +28,14 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @CapacitorPlugin(name = "Jwxt")
 public class JwxtPlugin extends Plugin {
 
     private Dialog loginDialog;
+    private WebView activeWebView;
     private final Handler pollHandler = new Handler(Looper.getMainLooper());
     private Runnable pollRunnable;
 
@@ -61,14 +64,14 @@ public class JwxtPlugin extends Plugin {
                 title.setLayoutParams(titleParams);
                 header.addView(title);
 
-                // 备用“进入教务”按钮
-                Button btnJw = new Button(getActivity());
-                btnJw.setText("进入教务");
-                btnJw.setTextSize(12);
-                btnJw.setTextColor(Color.WHITE);
-                btnJw.setBackgroundColor(Color.parseColor("#2563eb"));
-                btnJw.setPadding(20, 10, 20, 10);
-                header.addView(btnJw);
+                // 快捷“进入教务/同步课表”按钮
+                Button btnAction = new Button(getActivity());
+                btnAction.setText("教务管理");
+                btnAction.setTextSize(12);
+                btnAction.setTextColor(Color.WHITE);
+                btnAction.setBackgroundColor(Color.parseColor("#2563eb"));
+                btnAction.setPadding(20, 10, 20, 10);
+                header.addView(btnAction);
 
                 // 关闭按钮
                 Button btnClose = new Button(getActivity());
@@ -82,6 +85,7 @@ public class JwxtPlugin extends Plugin {
                 layout.addView(header);
 
                 WebView webView = new WebView(getActivity());
+                activeWebView = webView;
                 webView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                 webView.getSettings().setJavaScriptEnabled(true);
                 webView.getSettings().setDomStorageEnabled(true);
@@ -90,9 +94,20 @@ public class JwxtPlugin extends Plugin {
                 webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
                 webView.getSettings().setSupportMultipleWindows(true);
 
-                btnJw.setOnClickListener(v -> {
-                    title.setText("⚡ 正在加载教务系统...");
-                    webView.loadUrl("https://jwgl.cug.edu.cn/jwglxt/xtgl/index_initMenu.html");
+                // 关键：启用第三方 Cookie 与持久化 Cookie 接收
+                CookieManager cookieManager = CookieManager.getInstance();
+                cookieManager.setAcceptCookie(true);
+                cookieManager.setAcceptThirdPartyCookies(webView, true);
+
+                btnAction.setOnClickListener(v -> {
+                    String curUrl = webView.getUrl();
+                    if (curUrl != null && curUrl.contains("jwglxt")) {
+                        title.setText("⚡ 正在立即提取课表凭据...");
+                        checkCookies(call, webView);
+                    } else {
+                        title.setText("⚡ 正在触发进入教务管理...");
+                        triggerClickJw(webView);
+                    }
                 });
 
                 btnClose.setOnClickListener(v -> {
@@ -106,21 +121,12 @@ public class JwxtPlugin extends Plugin {
                     call.reject("已取消登录");
                 });
 
-                // 处理新窗口与多窗口重定向，保证在同一个 WebView 内打开
+                // 处理新窗口与多窗口重定向，直接在当前配置好的主 webView 中打开
                 webView.setWebChromeClient(new WebChromeClient() {
                     @Override
                     public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
-                        WebView newWebView = new WebView(getActivity());
-                        newWebView.setWebViewClient(new WebViewClient() {
-                            @Override
-                            public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest req) {
-                                String targetUrl = req.getUrl().toString();
-                                view.loadUrl(targetUrl);
-                                return true;
-                            }
-                        });
                         WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
-                        transport.setWebView(newWebView);
+                        transport.setWebView(view);
                         resultMsg.sendToTarget();
                         return true;
                     }
@@ -137,33 +143,18 @@ public class JwxtPlugin extends Plugin {
                     @Override
                     public void onPageFinished(WebView view, String url) {
                         super.onPageFinished(view, url);
-                        checkCookies(call);
+                        checkCookies(call, view);
 
-                        // 当检测到已进入智慧门户 i.cug.edu.cn，自动执行点击“综合教务”
-                        if (url != null && url.contains("i.cug.edu.cn")) {
-                            title.setText("⚡ 登录成功！正在跳转教务系统...");
-                            String js = "javascript:(function(){" +
-                                    "function clickJw(){" +
-                                    "  var all = document.querySelectorAll('*');" +
-                                    "  for(var i=0; i<all.length; i++){" +
-                                    "    var t = all[i].textContent ? all[i].textContent.trim() : '';" +
-                                    "    if(t === '综合教务' || t === '教务系统'){" +
-                                    "      all[i].click();" +
-                                    "      if(all[i].parentElement) all[i].parentElement.click();" +
-                                    "      return true;" +
-                                    "    }" +
-                                    "  }" +
-                                    "  return false;" +
-                                    "}" +
-                                    "if(!clickJw()){" +
-                                    "  var c = 0;" +
-                                    "  var tId = setInterval(function(){" +
-                                    "    c++;" +
-                                    "    if(clickJw() || c > 25) clearInterval(tId);" +
-                                    "  }, 400);" +
-                                    "}" +
-                                    "})()";
-                            view.evaluateJavascript(js, null);
+                        if (url != null) {
+                            if (url.contains("i.cug.edu.cn")) {
+                                title.setText("⚡ 登录成功！正在跳转教务管理...");
+                                btnAction.setText("点击进入教务");
+                                triggerClickJw(view);
+                            } else if (url.contains("jwglxt")) {
+                                title.setText("🎉 已进入教务系统！正在同步课表...");
+                                btnAction.setText("立即同步");
+                                checkCookies(call, view);
+                            }
                         }
                     }
                 });
@@ -182,13 +173,45 @@ public class JwxtPlugin extends Plugin {
         });
     }
 
+    private void triggerClickJw(WebView webView) {
+        String js = "javascript:(function(){" +
+                "function clickTarget(){" +
+                "  var keywords = ['教务管理', '综合教务', '教务系统', '学生课表', '学生个人课表'];" +
+                "  var all = document.querySelectorAll('*');" +
+                "  for(var i=0; i<all.length; i++){" +
+                "    var el = all[i];" +
+                "    if(el.children.length === 0){" +
+                "      var t = el.textContent ? el.textContent.trim() : '';" +
+                "      for(var k=0; k<keywords.length; k++){" +
+                "        if(t === keywords[k] || (t.indexOf(keywords[k]) !== -1 && t.length < 8)){" +
+                "          el.click();" +
+                "          if(el.parentElement) el.parentElement.click();" +
+                "          if(el.parentElement && el.parentElement.parentElement) el.parentElement.parentElement.click();" +
+                "          return true;" +
+                "        }" +
+                "      }" +
+                "    }" +
+                "  }" +
+                "  return false;" +
+                "}" +
+                "if(!clickTarget()){" +
+                "  var c = 0;" +
+                "  var tId = setInterval(function(){" +
+                "    c++;" +
+                "    if(clickTarget() || c > 30) clearInterval(tId);" +
+                "  }, 400);" +
+                "}" +
+                "})()";
+        webView.evaluateJavascript(js, null);
+    }
+
     private void startCookiePolling(PluginCall call) {
         stopCookiePolling();
         pollRunnable = new Runnable() {
             @Override
             public void run() {
                 if (loginDialog != null && loginDialog.isShowing()) {
-                    if (!checkCookies(call)) {
+                    if (!checkCookies(call, activeWebView)) {
                         pollHandler.postDelayed(this, 800);
                     }
                 }
@@ -204,32 +227,45 @@ public class JwxtPlugin extends Plugin {
         }
     }
 
-    private boolean checkCookies(PluginCall call) {
-        String cookies = CookieManager.getInstance().getCookie("https://jwgl.cug.edu.cn");
-        if (cookies == null || cookies.isEmpty()) {
-            cookies = CookieManager.getInstance().getCookie("http://jwgl.cug.edu.cn");
-        }
-        if (cookies != null && cookies.contains("JSESSIONID=")) {
-            String jsessionId = "";
-            for (String part : cookies.split(";")) {
-                part = part.trim();
-                if (part.startsWith("JSESSIONID=")) {
-                    jsessionId = part.substring("JSESSIONID=".length());
-                    break;
-                }
-            }
+    private boolean checkCookies(PluginCall call, WebView webView) {
+        CookieManager cm = CookieManager.getInstance();
+        String currentUrl = (webView != null) ? webView.getUrl() : null;
 
-            if (!jsessionId.isEmpty()) {
-                stopCookiePolling();
-                if (loginDialog != null && loginDialog.isShowing()) {
-                    loginDialog.dismiss();
-                    loginDialog = null;
+        // 覆盖所有可能的正方教务系统 Path（Path=/jwglxt）与顶级域名
+        String[] testUrls = new String[] {
+                currentUrl,
+                "https://jwgl.cug.edu.cn/jwglxt/",
+                "https://jwgl.cug.edu.cn/jwglxt/xtgl/index_initMenu.html",
+                "https://jwgl.cug.edu.cn/jwglxt/kbcx/xskbcx_cxXsgrkbIndex.html",
+                "https://jwgl.cug.edu.cn/",
+                "http://jwgl.cug.edu.cn/jwglxt/",
+                "http://jwgl.cug.edu.cn/",
+                "https://cug.edu.cn/"
+        };
+
+        Pattern p = Pattern.compile("(?i)JSESSIONID=([^;\\s]+)");
+
+        for (String u : testUrls) {
+            if (u == null || u.isEmpty()) continue;
+            String cookies = cm.getCookie(u);
+            if (cookies == null || cookies.isEmpty()) continue;
+
+            Matcher m = p.matcher(cookies);
+            if (m.find()) {
+                String jsessionId = m.group(1);
+                if (jsessionId != null && !jsessionId.isEmpty()) {
+                    stopCookiePolling();
+                    if (loginDialog != null && loginDialog.isShowing()) {
+                        loginDialog.dismiss();
+                        loginDialog = null;
+                    }
+                    JSObject ret = new JSObject();
+                    ret.put("success", true);
+                    ret.put("jsessionid", jsessionId);
+                    ret.put("fullCookies", cookies);
+                    call.resolve(ret);
+                    return true;
                 }
-                JSObject ret = new JSObject();
-                ret.put("success", true);
-                ret.put("jsessionid", jsessionId);
-                call.resolve(ret);
-                return true;
             }
         }
         return false;
@@ -240,6 +276,7 @@ public class JwxtPlugin extends Plugin {
         new Thread(() -> {
             try {
                 String jsessionId = call.getString("jsessionid", "");
+                String fullCookies = call.getString("fullCookies", "");
                 String xnm = call.getString("xnm", "2026");
                 String xqm = call.getString("xqm", "3");
 
@@ -253,7 +290,9 @@ public class JwxtPlugin extends Plugin {
                 conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Mobile Safari/537.36");
                 conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
                 conn.setRequestProperty("Referer", "https://jwgl.cug.edu.cn/jwglxt/kbcx/xskbcx_cxXsgrkbIndex.html?gnmkdm=N2151&layout=default");
-                conn.setRequestProperty("Cookie", "JSESSIONID=" + jsessionId);
+
+                String cookieHeader = (fullCookies != null && !fullCookies.isEmpty()) ? fullCookies : ("JSESSIONID=" + jsessionId);
+                conn.setRequestProperty("Cookie", cookieHeader);
 
                 String payload = "xnm=" + URLEncoder.encode(xnm, "UTF-8")
                         + "&xqm=" + URLEncoder.encode(xqm, "UTF-8")
