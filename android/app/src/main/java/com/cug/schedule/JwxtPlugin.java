@@ -14,8 +14,10 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -77,44 +79,47 @@ public class JwxtPlugin extends Plugin {
 
                 loginDialog = new Dialog(getActivity(), android.R.style.Theme_DeviceDefault_Light_NoActionBar_Fullscreen);
 
-                LinearLayout layout = new LinearLayout(getActivity());
-                layout.setOrientation(LinearLayout.VERTICAL);
-                layout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                FrameLayout root = new FrameLayout(getActivity());
+                root.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-                // 顶部标题栏
+                LinearLayout mainLayout = new LinearLayout(getActivity());
+                mainLayout.setOrientation(LinearLayout.VERTICAL);
+                mainLayout.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+                // 顶部导航与操作指引栏（参考 WakeUp 提示条）
                 LinearLayout header = new LinearLayout(getActivity());
-                header.setBackgroundColor(Color.parseColor("#1e293b"));
-                header.setPadding(30, 40, 30, 30);
+                header.setBackgroundColor(Color.parseColor("#0f172a"));
+                header.setPadding(30, 36, 30, 24);
                 header.setOrientation(LinearLayout.HORIZONTAL);
                 header.setGravity(Gravity.CENTER_VERTICAL);
 
                 TextView title = new TextView(getActivity());
-                title.setText("🔒 地大统一认证 · 登录后自动抓取");
+                title.setText("💡 找到「学生个人课表」后，点击右下角【导课】");
                 title.setTextColor(Color.WHITE);
-                title.setTextSize(14);
+                title.setTextSize(13);
                 LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
                 title.setLayoutParams(titleParams);
                 header.addView(title);
 
-                // 快捷“进入教务/立即抓取”按钮
-                Button btnAction = new Button(getActivity());
-                btnAction.setText("教务管理");
-                btnAction.setTextSize(12);
-                btnAction.setTextColor(Color.WHITE);
-                btnAction.setBackgroundColor(Color.parseColor("#2563eb"));
-                btnAction.setPadding(20, 10, 20, 10);
-                header.addView(btnAction);
+                // 顶部“直达课表”快捷按钮
+                Button btnDirect = new Button(getActivity());
+                btnDirect.setText("直达课表");
+                btnDirect.setTextSize(11);
+                btnDirect.setTextColor(Color.WHITE);
+                btnDirect.setBackgroundColor(Color.parseColor("#3b82f6"));
+                btnDirect.setPadding(16, 6, 16, 6);
+                header.addView(btnDirect);
 
                 // 关闭按钮
                 Button btnClose = new Button(getActivity());
                 btnClose.setText("✕");
-                btnClose.setTextSize(14);
-                btnClose.setTextColor(Color.WHITE);
+                btnClose.setTextSize(16);
+                btnClose.setTextColor(Color.parseColor("#94a3b8"));
                 btnClose.setBackgroundColor(Color.TRANSPARENT);
-                btnClose.setPadding(20, 10, 20, 10);
+                btnClose.setPadding(16, 6, 16, 6);
                 header.addView(btnClose);
 
-                layout.addView(header);
+                mainLayout.addView(header);
 
                 WebView webView = new WebView(getActivity());
                 activeWebView = webView;
@@ -133,16 +138,61 @@ public class JwxtPlugin extends Plugin {
                 cookieManager.setAcceptCookie(true);
                 cookieManager.setAcceptThirdPartyCookies(webView, true);
 
-                btnAction.setOnClickListener(v -> {
+                mainLayout.addView(webView);
+                root.addView(mainLayout);
+
+                // 🌟 核心差距抹平：WakeUp 风格的右下角全局悬浮【导课】大按钮 (FAB)
+                Button fabImport = new Button(getActivity());
+                fabImport.setText("📥 导课");
+                fabImport.setTextSize(15);
+                fabImport.setTextColor(Color.WHITE);
+                fabImport.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+
+                android.graphics.drawable.GradientDrawable fabBg = new android.graphics.drawable.GradientDrawable();
+                fabBg.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+                fabBg.setCornerRadius(100f);
+                fabBg.setColor(Color.parseColor("#2563eb")); // 经典吸睛蓝
+                fabBg.setStroke(4, Color.parseColor("#93c5fd"));
+                fabImport.setBackground(fabBg);
+                fabImport.setElevation(24f);
+
+                float density = getActivity().getResources().getDisplayMetrics().density;
+                FrameLayout.LayoutParams fabParams = new FrameLayout.LayoutParams((int)(88 * density), (int)(54 * density));
+                fabParams.gravity = Gravity.BOTTOM | Gravity.END;
+                fabParams.bottomMargin = (int)(36 * density);
+                fabParams.rightMargin = (int)(24 * density);
+                fabImport.setLayoutParams(fabParams);
+
+                root.addView(fabImport);
+
+                // 点击悬浮【导课】按钮：随时随地一键抓取并导入！
+                fabImport.setOnClickListener(v -> {
                     String curUrl = webView.getUrl();
-                    if (curUrl != null && (curUrl.contains("jwglxt") || curUrl.contains("jwgl.cug.edu.cn"))) {
-                        title.setText("⚡ 正在立即提取课表数据...");
-                        injectFetchScript(webView);
-                        checkCookies(call, webView);
-                    } else {
-                        title.setText("⚡ 正在直接进入教务系统...");
-                        webView.loadUrl("https://jwgl.cug.edu.cn/jwglxt/xtgl/login_slogin.html");
+                    title.setText("⚡ 正在导入课表，请稍候...");
+                    fabBg.setColor(Color.parseColor("#059669")); // 变绿
+                    fabImport.setText("导入中");
+
+                    injectFetchScript(webView);
+                    checkCookies(call, webView);
+
+                    if (curUrl != null && curUrl.contains("i.cug.edu.cn")) {
+                        triggerClickJw(webView);
+                        pollHandler.postDelayed(() -> {
+                            if (activeWebView != null && activeWebView.getUrl() != null && activeWebView.getUrl().contains("i.cug.edu.cn")) {
+                                activeWebView.loadUrl("https://jwgl.cug.edu.cn/jwglxt/xtgl/login_slogin.html");
+                            }
+                        }, 800);
+                    } else if (curUrl != null && curUrl.contains("sfrz.cug.edu.cn")) {
+                        Toast.makeText(getActivity(), "请先完成账号密码及验证码登录", Toast.LENGTH_SHORT).show();
+                        fabBg.setColor(Color.parseColor("#2563eb"));
+                        fabImport.setText("📥 导课");
                     }
+                });
+
+                // 直达课表快捷键
+                btnDirect.setOnClickListener(v -> {
+                    title.setText("⚡ 正在直达「学生个人课表」...");
+                    webView.loadUrl("https://jwgl.cug.edu.cn/jwglxt/kbcx/xskbcx_cxXsgrkbIndex.html?gnmkdm=N2151&layout=default");
                 });
 
                 btnClose.setOnClickListener(v -> {
@@ -181,36 +231,29 @@ public class JwxtPlugin extends Plugin {
 
                         if (url != null) {
                             if (url.contains("i.cug.edu.cn")) {
-                                title.setText("⚡ 登录成功！正在跳转教务管理...");
-                                btnAction.setText("点击进入教务");
+                                title.setText("💡 请在下方点击【教务管理】图标进入教务");
                                 triggerClickJw(view);
-                                // 保底兜底：若 1.5 秒后仍在门户，直接通过单点登录加载教务系统
-                                pollHandler.postDelayed(() -> {
-                                    if (activeWebView != null) {
-                                        String cur = activeWebView.getUrl();
-                                        if (cur != null && cur.contains("i.cug.edu.cn")) {
-                                            activeWebView.loadUrl("https://jwgl.cug.edu.cn/jwglxt/xtgl/login_slogin.html");
-                                        }
-                                    }
-                                }, 1500);
-                            } else if (url.contains("jwglxt") || url.contains("jwgl.cug.edu.cn")) {
-                                title.setText("🎉 已进入教务系统！正在抓取课表...");
-                                btnAction.setText("立即抓取课表");
+                            } else if (url.contains("xskbcx")) {
+                                title.setText("🎉 已到达课表页面！请点击右下角【📥 导课】");
+                                fabBg.setColor(Color.parseColor("#059669"));
+                                fabImport.setText("✨ 导课");
                                 injectFetchScript(view);
                                 checkCookies(call, view);
+                            } else if (url.contains("jwglxt") || url.contains("jwgl.cug.edu.cn")) {
+                                title.setText("💡 点击右上角【直达课表】或进入个人课表");
+                                injectFetchScript(view);
                             }
                         }
                     }
                 });
 
-                layout.addView(webView);
-                loginDialog.setContentView(layout);
+                loginDialog.setContentView(root);
                 loginDialog.show();
 
                 startCookiePolling(call);
 
-                // 直接以教务系统为 service 单点登录入口，认证后直奔教务系统，彻底绕过门户周历！
-                webView.loadUrl("https://sfrz.cug.edu.cn/authserver/login?service=https%3A%2F%2Fjwgl.cug.edu.cn%2Fjwglxt%2Fxtgl%2Flogin_slogin.html");
+                // 启动门户单点登录入口，提供与 WakeUp 完全一致的自然访问路径
+                webView.loadUrl("https://sfrz.cug.edu.cn/authserver/login?service=https%3A%2F%2Fi.cug.edu.cn%2Fweb%2F%3FCASLOGIN%3DCASLOGIN");
 
             } catch (Exception e) {
                 call.reject("打开登录窗口失败: " + e.getMessage());
@@ -270,9 +313,9 @@ public class JwxtPlugin extends Plugin {
 
     private void injectFetchScript(WebView view) {
         String js = "javascript:(function(){" +
-                "if(window.__jw_fetching) return;" +
-                "window.__jw_fetching = true;" +
-                "var payload = 'xnm=2026&xqm=3&kzlx=ck&xsdm=&kclbdm=&kclxdm=';" +
+                "var selXnm = (document.querySelector('#xnm') && document.querySelector('#xnm').value) || (document.querySelector('select[name=\"xnm\"]') && document.querySelector('select[name=\"xnm\"]').value) || '2026';" +
+                "var selXqm = (document.querySelector('#xqm') && document.querySelector('#xqm').value) || (document.querySelector('select[name=\"xqm\"]') && document.querySelector('select[name=\"xqm\"]').value) || '3';" +
+                "var payload = 'xnm=' + encodeURIComponent(selXnm) + '&xqm=' + encodeURIComponent(selXqm) + '&kzlx=ck&xsdm=&kclbdm=&kclxdm=';" +
                 "fetch('/jwglxt/kbcx/xskbcx_cxXsgrkb.html?gnmkdm=N2151', {" +
                 "  method: 'POST'," +
                 "  headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }," +
