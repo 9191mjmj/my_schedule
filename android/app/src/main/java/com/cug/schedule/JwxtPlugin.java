@@ -241,19 +241,23 @@ public class JwxtPlugin extends Plugin {
                 "  }" +
                 "  return false;" +
                 "}" +
-                "function clickServiceTab(){" +
+                "function clickAppTab(){" +
+                "  var tabKeywords = ['应用中心', '应用', '全部应用', '服务中心', '办事大厅', '服务', '业务系统'];" +
                 "  var tabs = document.querySelectorAll('*');" +
                 "  for(var j=0; j<tabs.length; j++){" +
                 "    var txt = tabs[j].children.length === 0 ? (tabs[j].textContent||'').trim() : '';" +
-                "    if(txt === '服务中心' || txt === '办事大厅' || txt === '服务'){" +
-                "      tabs[j].click();" +
-                "      return true;" +
+                "    for(var k=0; k<tabKeywords.length; k++){" +
+                "      if(txt === tabKeywords[k]){" +
+                "        tabs[j].click();" +
+                "        if(tabs[j].parentElement) tabs[j].parentElement.click();" +
+                "        return true;" +
+                "      }" +
                 "    }" +
                 "  }" +
                 "  return false;" +
                 "}" +
                 "if(!clickTarget()){" +
-                "  clickServiceTab();" +
+                "  clickAppTab();" +
                 "  var c = 0;" +
                 "  var tId = setInterval(function(){" +
                 "    c++;" +
