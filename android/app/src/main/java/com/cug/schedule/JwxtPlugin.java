@@ -50,7 +50,7 @@ public class JwxtPlugin extends Plugin {
         @JavascriptInterface
         public void onScheduleFetched(String rawJson) {
             getActivity().runOnUiThread(() -> {
-                if (rawJson != null && rawJson.contains("kbList")) {
+                if (rawJson != null && rawJson.contains("kbList") && !rawJson.trim().startsWith("<")) {
                     stopCookiePolling();
                     if (loginDialog != null && loginDialog.isShowing()) {
                         loginDialog.dismiss();
@@ -70,6 +70,11 @@ public class JwxtPlugin extends Plugin {
     public void openLogin(PluginCall call) {
         getActivity().runOnUiThread(() -> {
             try {
+                // 关键修复 1：每次打开登录窗口前，彻底清除旧的过期 Cookie，防止误认旧会话
+                CookieManager cookieManager = CookieManager.getInstance();
+                cookieManager.removeAllCookies(null);
+                cookieManager.flush();
+
                 loginDialog = new Dialog(getActivity(), android.R.style.Theme_DeviceDefault_Light_NoActionBar_Fullscreen);
 
                 LinearLayout layout = new LinearLayout(getActivity());
@@ -125,7 +130,6 @@ public class JwxtPlugin extends Plugin {
                 webView.addJavascriptInterface(new JwxtBridge(call), "AppBridge");
 
                 // 关键：启用第三方 Cookie 与持久化 Cookie 接收
-                CookieManager cookieManager = CookieManager.getInstance();
                 cookieManager.setAcceptCookie(true);
                 cookieManager.setAcceptThirdPartyCookies(webView, true);
 
@@ -174,7 +178,6 @@ public class JwxtPlugin extends Plugin {
                     @Override
                     public void onPageFinished(WebView view, String url) {
                         super.onPageFinished(view, url);
-                        checkCookies(call, view);
 
                         if (url != null) {
                             if (url.contains("i.cug.edu.cn")) {
@@ -248,7 +251,7 @@ public class JwxtPlugin extends Plugin {
                 "  body: payload" +
                 "}).then(function(r){ return r.text(); })" +
                 ".then(function(text){" +
-                "  if(text && text.indexOf('kbList') !== -1){" +
+                "  if(text && text.indexOf('kbList') !== -1 && !text.trim().startsWith('<')){" +
                 "    if(window.AppBridge) window.AppBridge.onScheduleFetched(text);" +
                 "  } else {" +
                 "    window.__jw_fetching = false;" +
@@ -281,18 +284,20 @@ public class JwxtPlugin extends Plugin {
     }
 
     private boolean checkCookies(PluginCall call, WebView webView) {
-        CookieManager cm = CookieManager.getInstance();
         String currentUrl = (webView != null) ? webView.getUrl() : null;
 
+        // 关键防护 2：只有当前页面已经实际跳转进入教务系统（jwglxt）时，才允许检测 Cookie 并关闭登录窗口！
+        if (currentUrl == null || (!currentUrl.contains("jwglxt") && !currentUrl.contains("jwgl.cug.edu.cn"))) {
+            return false;
+        }
+
+        CookieManager cm = CookieManager.getInstance();
         String[] testUrls = new String[] {
                 currentUrl,
                 "https://jwgl.cug.edu.cn/jwglxt/",
                 "https://jwgl.cug.edu.cn/jwglxt/xtgl/index_initMenu.html",
                 "https://jwgl.cug.edu.cn/jwglxt/kbcx/xskbcx_cxXsgrkbIndex.html",
-                "https://jwgl.cug.edu.cn/",
-                "http://jwgl.cug.edu.cn/jwglxt/",
-                "http://jwgl.cug.edu.cn/",
-                "https://cug.edu.cn/"
+                "https://jwgl.cug.edu.cn/"
         };
 
         Pattern p = Pattern.compile("(?i)JSESSIONID=([^;\\s]+)");
@@ -365,9 +370,15 @@ public class JwxtPlugin extends Plugin {
                     }
                     br.close();
 
+                    String raw = sb.toString();
+                    if (raw.trim().startsWith("<") || !raw.contains("kbList")) {
+                        call.reject("教务系统会话已失效，请重新登录");
+                        return;
+                    }
+
                     JSObject ret = new JSObject();
                     ret.put("success", true);
-                    ret.put("rawJson", sb.toString());
+                    ret.put("rawJson", raw);
                     call.resolve(ret);
                 } else {
                     call.reject("教务系统响应状态码错误: " + code);
