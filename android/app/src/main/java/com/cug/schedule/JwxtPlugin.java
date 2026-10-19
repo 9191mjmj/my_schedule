@@ -140,8 +140,8 @@ public class JwxtPlugin extends Plugin {
                         injectFetchScript(webView);
                         checkCookies(call, webView);
                     } else {
-                        title.setText("⚡ 正在触发进入教务管理...");
-                        triggerClickJw(webView);
+                        title.setText("⚡ 正在直接进入教务系统...");
+                        webView.loadUrl("https://jwgl.cug.edu.cn/jwglxt/xtgl/login_slogin.html");
                     }
                 });
 
@@ -184,6 +184,15 @@ public class JwxtPlugin extends Plugin {
                                 title.setText("⚡ 登录成功！正在跳转教务管理...");
                                 btnAction.setText("点击进入教务");
                                 triggerClickJw(view);
+                                // 保底兜底：若 1.5 秒后仍在门户，直接通过单点登录加载教务系统
+                                pollHandler.postDelayed(() -> {
+                                    if (activeWebView != null) {
+                                        String cur = activeWebView.getUrl();
+                                        if (cur != null && cur.contains("i.cug.edu.cn")) {
+                                            activeWebView.loadUrl("https://jwgl.cug.edu.cn/jwglxt/xtgl/login_slogin.html");
+                                        }
+                                    }
+                                }, 1500);
                             } else if (url.contains("jwglxt") || url.contains("jwgl.cug.edu.cn")) {
                                 title.setText("🎉 已进入教务系统！正在抓取课表...");
                                 btnAction.setText("立即抓取课表");
@@ -200,7 +209,8 @@ public class JwxtPlugin extends Plugin {
 
                 startCookiePolling(call);
 
-                webView.loadUrl("https://sfrz.cug.edu.cn/authserver/login?service=https%3A%2F%2Fi.cug.edu.cn%2Fweb%2F%3FCASLOGIN%3DCASLOGIN");
+                // 直接以教务系统为 service 单点登录入口，认证后直奔教务系统，彻底绕过门户周历！
+                webView.loadUrl("https://sfrz.cug.edu.cn/authserver/login?service=https%3A%2F%2Fjwgl.cug.edu.cn%2Fjwglxt%2Fxtgl%2Flogin_slogin.html");
 
             } catch (Exception e) {
                 call.reject("打开登录窗口失败: " + e.getMessage());
@@ -210,6 +220,8 @@ public class JwxtPlugin extends Plugin {
 
     private void triggerClickJw(WebView webView) {
         String js = "javascript:(function(){" +
+                "var links = document.querySelectorAll('a[href*=\"jwgl\"], a[href*=\"jwxt\"]');" +
+                "if(links.length > 0){ links[0].click(); return; }" +
                 "function clickTarget(){" +
                 "  var keywords = ['教务管理', '综合教务', '教务系统', '学生课表', '学生个人课表'];" +
                 "  var all = document.querySelectorAll('*');" +
@@ -229,7 +241,19 @@ public class JwxtPlugin extends Plugin {
                 "  }" +
                 "  return false;" +
                 "}" +
+                "function clickServiceTab(){" +
+                "  var tabs = document.querySelectorAll('*');" +
+                "  for(var j=0; j<tabs.length; j++){" +
+                "    var txt = tabs[j].children.length === 0 ? (tabs[j].textContent||'').trim() : '';" +
+                "    if(txt === '服务中心' || txt === '办事大厅' || txt === '服务'){" +
+                "      tabs[j].click();" +
+                "      return true;" +
+                "    }" +
+                "  }" +
+                "  return false;" +
+                "}" +
                 "if(!clickTarget()){" +
+                "  clickServiceTab();" +
                 "  var c = 0;" +
                 "  var tId = setInterval(function(){" +
                 "    c++;" +
