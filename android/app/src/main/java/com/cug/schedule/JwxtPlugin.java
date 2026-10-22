@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
@@ -101,13 +102,14 @@ public class JwxtPlugin extends Plugin {
                 title.setLayoutParams(titleParams);
                 header.addView(title);
 
-                // 顶部“直达课表”快捷按钮
+                // 顶部“直达课表”快捷按钮（在进入教务系统后才显示）
                 Button btnDirect = new Button(getActivity());
                 btnDirect.setText("直达课表");
                 btnDirect.setTextSize(11);
                 btnDirect.setTextColor(Color.WHITE);
                 btnDirect.setBackgroundColor(Color.parseColor("#3b82f6"));
                 btnDirect.setPadding(16, 6, 16, 6);
+                btnDirect.setVisibility(View.GONE);
                 header.addView(btnDirect);
 
                 // 关闭按钮
@@ -162,6 +164,7 @@ public class JwxtPlugin extends Plugin {
                 fabParams.bottomMargin = (int)(36 * density);
                 fabParams.rightMargin = (int)(24 * density);
                 fabImport.setLayoutParams(fabParams);
+                fabImport.setVisibility(View.GONE); // 初始登录与门户阶段隐藏，进入教务后才显现
 
                 root.addView(fabImport);
 
@@ -230,17 +233,29 @@ public class JwxtPlugin extends Plugin {
                         super.onPageFinished(view, url);
 
                         if (url != null) {
-                            if (url.contains("i.cug.edu.cn")) {
+                            if (url.contains("sfrz.cug.edu.cn")) {
+                                title.setText("🔒 请登录地大统一身份认证");
+                                fabImport.setVisibility(View.GONE);
+                                btnDirect.setVisibility(View.GONE);
+                            } else if (url.contains("i.cug.edu.cn")) {
                                 title.setText("💡 请在下方点击【教务管理】图标进入教务");
+                                fabImport.setVisibility(View.GONE);
+                                btnDirect.setVisibility(View.GONE);
                                 triggerClickJw(view);
                             } else if (url.contains("xskbcx")) {
                                 title.setText("🎉 已到达课表页面！请点击右下角【📥 导课】");
+                                fabImport.setVisibility(View.VISIBLE);
+                                btnDirect.setVisibility(View.VISIBLE);
                                 fabBg.setColor(Color.parseColor("#059669"));
-                                fabImport.setText("✨ 导课");
+                                fabImport.setText("✨ 立即导课");
                                 injectFetchScript(view);
                                 checkCookies(call, view);
                             } else if (url.contains("jwglxt") || url.contains("jwgl.cug.edu.cn")) {
                                 title.setText("💡 点击右上角【直达课表】或进入个人课表");
+                                fabImport.setVisibility(View.VISIBLE);
+                                btnDirect.setVisibility(View.VISIBLE);
+                                fabBg.setColor(Color.parseColor("#2563eb"));
+                                fabImport.setText("📥 导课");
                                 injectFetchScript(view);
                             }
                         }
@@ -252,8 +267,8 @@ public class JwxtPlugin extends Plugin {
 
                 startCookiePolling(call);
 
-                // 启动门户单点登录入口，提供与 WakeUp 完全一致的自然访问路径
-                webView.loadUrl("https://sfrz.cug.edu.cn/authserver/login?service=https%3A%2F%2Fi.cug.edu.cn%2Fweb%2F%3FCASLOGIN%3DCASLOGIN");
+                // 启动地大信息门户真实登录入口（直达推荐服务与教务管理）
+                webView.loadUrl("https://sfrz.cug.edu.cn/tpass/login?service=https%3A%2F%2Fi.cug.edu.cn%2Fweb%2F%3FCASLOGIN%3DCASLOGIN%23%2Flogin%3FredirectUrl%3D%252Fweb%252F%253FCASLOGIN%253DCASLOGIN%2523%252Fcurrent%252Fsys-portal");
 
             } catch (Exception e) {
                 call.reject("打开登录窗口失败: " + e.getMessage());

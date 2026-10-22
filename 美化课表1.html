@@ -1869,7 +1869,7 @@ function importSchedule() {
       clearInterval(cookiePollTimer);
       cookiePollTimer = null;
     }
-    wv.src = 'https://sfrz.cug.edu.cn/authserver/login?service=https%3A%2F%2Fi.cug.edu.cn%2Fweb%2F%3FCASLOGIN%3DCASLOGIN';
+    wv.src = 'https://sfrz.cug.edu.cn/tpass/login?service=https%3A%2F%2Fi.cug.edu.cn%2Fweb%2F%3FCASLOGIN%3DCASLOGIN%23%2Flogin%3FredirectUrl%3D%252Fweb%252F%253FCASLOGIN%253DCASLOGIN%2523%252Fcurrent%252Fsys-portal';
     let isFetching = false;
     const check = async () => {
       if (isFetching || !window.electronAPI || !window.electronAPI.getJwxtCookie) return;

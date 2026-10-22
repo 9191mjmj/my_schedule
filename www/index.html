@@ -973,24 +973,335 @@
     line-height: 1.35;
   }
 
-  /* 响应式适配 */
-  @media (max-width: 1079px) {
-    .app { padding: 24px 20px 40px; }
-    .cards { grid-template-columns: 1fr 1fr; }
-    .week-big { font-size: 34px; }
+  /* ====== 移动端专属轻量顶栏与弹窗 ====== */
+  .mobile-header {
+    display: none;
   }
 
-  @media (max-width: 640px) {
-    :root { --tc: 48px; --rh: 64px; }
-    .app { padding: 16px 12px 40px; }
-    .cards { grid-template-columns: 1fr; gap: 12px; }
-    .week-big { font-size: 26px; }
-    .top-actions .txt { display: none; }
-    .ibtn { width: 40px; padding: 0; justify-content: center; }
-    .course { padding: 5px 6px; }
-    .course-name { font-size: 11px; }
-    .course-badge { display: none; }
-    .detail-grid { grid-template-columns: 1fr; }
+  /* 响应式适配 */
+  @media (max-width: 1079px) {
+    .app { padding: 20px 16px 36px; }
+    .cards { grid-template-columns: 1fr 1fr; }
+    .week-big { font-size: 32px; }
+  }
+
+  @media (max-width: 768px) {
+    :root {
+      --tc: 32px;
+      --rh: 72px;
+    }
+
+    body {
+      padding: 0;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    .app {
+      max-width: 100% !important;
+      padding: 0 0 20px 0 !important;
+      margin: 0 !important;
+    }
+
+    /* 核心改造：彻底隐藏桌面端 660px 庞大堆叠元素，首屏 100% 留给课表！ */
+    .desktop-only {
+      display: none !important;
+    }
+
+    /* 启用移动端超轻量顶部栏（高度仅 48px，零滚动直达） */
+    .mobile-header {
+      display: flex !important;
+      align-items: center;
+      justify-content: space-between;
+      height: 48px;
+      padding: 6px 12px;
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .mobile-header-left {
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 8px;
+      transition: background 0.15s;
+    }
+
+    .mobile-header-left:active {
+      background: var(--surface-hover);
+    }
+
+    .mobile-week-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      letter-spacing: -0.2px;
+    }
+
+    .mobile-date-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      line-height: 1.1;
+      margin-top: 1px;
+    }
+
+    .mobile-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .m-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+
+    .m-icon-btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      width: auto;
+      padding: 0 10px;
+      gap: 4px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .m-icon-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* 课表全屏网格重构（填满手机宽度，告别 Excel 笨重粗边框） */
+    #schedule {
+      border-radius: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+      grid-template-columns: var(--tc) repeat(7, minmax(0, 1fr)) !important;
+    }
+
+    /* 星期与日期表头 */
+    .header {
+      padding: 6px 1px !important;
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      background: var(--surface) !important;
+      border-right: 1px solid var(--schedule-cell-border) !important;
+      border-bottom: 1px solid var(--schedule-cell-border) !important;
+    }
+
+    .header .date {
+      font-size: 10px !important;
+      margin-top: 1px !important;
+    }
+
+    /* 今天的高亮胶囊指示 */
+    .header.today {
+      background: var(--today-column-bg) !important;
+      border-bottom: 2px solid var(--accent) !important;
+    }
+
+    .header.today span:first-child {
+      color: var(--accent) !important;
+      font-weight: 800 !important;
+    }
+
+    .header.today .date {
+      background: var(--accent) !important;
+      color: #fff !important;
+      border-radius: 999px !important;
+      padding: 1px 5px !important;
+      font-weight: 700 !important;
+      margin-top: 2px !important;
+    }
+
+    /* 左侧时间轴紧凑排版 */
+    .period {
+      padding: 4px 1px !important;
+      font-size: 10px !important;
+      background: var(--surface) !important;
+    }
+
+    .period b {
+      font-size: 13px !important;
+      color: var(--text-secondary) !important;
+    }
+
+    .period .time {
+      font-size: 8.5px !important;
+      margin-top: 2px !important;
+      line-height: 1.1 !important;
+      transform: scale(0.92);
+    }
+
+    /* 网格单元格微弱细线 */
+    .cell {
+      min-height: var(--rh) !important;
+      border-right: 1px dashed rgba(200, 200, 200, 0.22) !important;
+      border-bottom: 1px dashed rgba(200, 200, 200, 0.22) !important;
+    }
+
+    /* 课程卡片视觉重磅升级（WakeUp 现代质感） */
+    .course {
+      margin: 1.5px 1px !important;
+      padding: 5px 3.5px !important;
+      border-radius: 9px !important;
+      border: 1px solid rgba(255, 255, 255, 0.25) !important;
+      box-shadow: 0 3px 10px var(--shadow-c, rgba(0,0,0,0.14)) !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+      overflow: hidden !important;
+      backdrop-filter: blur(8px) !important;
+    }
+
+    .course-name {
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      line-height: 1.22 !important;
+      display: -webkit-box !important;
+      -webkit-line-clamp: 3 !important;
+      -webkit-box-orient: vertical !important;
+      overflow: hidden !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25) !important;
+      margin-bottom: auto !important;
+      word-break: break-all !important;
+    }
+
+    .course-room {
+      font-size: 9.5px !important;
+      font-weight: 600 !important;
+      opacity: 0.95 !important;
+      line-height: 1.15 !important;
+      margin-top: 2px !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      background: rgba(0, 0, 0, 0.18) !important;
+      padding: 1px 4px !important;
+      border-radius: 4px !important;
+    }
+
+    .course-teacher {
+      font-size: 9px !important;
+      opacity: 0.88 !important;
+      line-height: 1.1 !important;
+      margin-top: 1.5px !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    .detail-grid { grid-template-columns: 1fr !important; }
+  }
+
+  /* 周次选择弹窗网格样式 */
+  .week-picker-box {
+    max-width: 360px !important;
+    width: 90% !important;
+    padding: 20px 22px !important;
+  }
+  .week-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .week-picker-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .week-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .week-grid-item {
+    height: 42px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: var(--surface-hover);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: all 0.18s;
+  }
+  .week-grid-item:hover, .week-grid-item:active {
+    background: var(--accent-light);
+    color: var(--accent);
+    border-color: var(--accent);
+    transform: scale(0.96);
+  }
+  .week-grid-item.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px var(--accent-glow);
+  }
+  .week-grid-item .cur-tag {
+    font-size: 8px;
+    line-height: 1;
+    opacity: 0.8;
+    margin-top: 1px;
+  }
+
+  /* 移动端统计概览弹窗 */
+  .stats-modal-box {
+    max-width: 440px !important;
+    width: 92% !important;
+    padding: 20px 22px !important;
+  }
+  .modal-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+  }
+
+  /* 课程卡片地点与教师样式（通用） */
+  .course-room {
+    font-size: 10px;
+    opacity: 0.95;
+    background: rgba(0, 0, 0, 0.18);
+    padding: 1px 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+  }
+  .course-teacher {
+    font-size: 9.5px;
+    opacity: 0.88;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1004,8 +1315,34 @@
 <body data-tab="tt">
 
 <div class="app">
-  <!-- 顶部栏 -->
-  <header class="top">
+  <!-- 移动端专属超轻量顶部栏（高度仅48px，点击周次直接弹窗选择，零滚动首屏即课表） -->
+  <header class="mobile-header" id="mobileHeader">
+    <div class="mobile-header-left" onclick="openWeekPicker()">
+      <div class="mobile-week-title">
+        <span id="mWeekNum">第 1 周</span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="mobile-date-sub" id="mDateSub">10月22日 周四</div>
+    </div>
+    <div class="mobile-header-actions">
+      <button class="m-icon-btn primary" onclick="importSchedule()" title="导入课表">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>导课</span>
+      </button>
+      <button class="m-icon-btn" onclick="openStatsModal()" title="今日概览与统计">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      </button>
+      <button class="m-icon-btn" onclick="toggleSettings()" title="设置与作息">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <button class="m-icon-btn" onclick="toggleTheme()" title="切换深浅主题">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 0 0 17z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- 桌面端大顶栏（移动端自动隐藏） -->
+  <header class="top desktop-only">
     <div>
       <div class="brand-pill">
         <span class="brand-badge">CUG</span>
@@ -1028,11 +1365,11 @@
     </div>
   </header>
 
-  <!-- Bento 状态卡片 -->
-  <section class="cards" id="cards"></section>
+  <!-- 桌面端 Bento 状态卡片（移动端自动隐藏，点击📊弹窗查看） -->
+  <section class="cards desktop-only" id="cards"></section>
 
-  <!-- 功能操作栏 -->
-  <div class="controls">
+  <!-- 桌面端功能操作栏（移动端自动隐藏） -->
+  <div class="controls desktop-only">
     <button class="btn primary" onclick="importSchedule()">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       <span>导入课表（登录教务系统）</span>
@@ -1062,7 +1399,7 @@
 
   <!-- 设置面板 -->
   <div id="settingsPanel">
-    <h3>⚙ 学期配置与作息设置</h3>
+    <h3>⚙ 学期配置与个性化设置</h3>
     <p>修改后点击保存，配置将保存在本地，下次启动自动生效。</p>
     
     <div class="setting-row">
@@ -1081,6 +1418,14 @@
       </select>
     </div>
 
+    <div class="setting-row" style="margin-top:10px;">
+      <label>个性化壁纸</label>
+      <div style="display:flex;gap:8px;">
+        <button class="btn ghost" style="padding:4px 10px;font-size:12px;" onclick="document.getElementById('bgInput').click()">🖼 更换背景图</button>
+        <button class="btn ghost" style="padding:4px 10px;font-size:12px;" onclick="clearBackground()">✕ 清除</button>
+      </div>
+    </div>
+
     <div style="margin: 18px 0 12px; font-weight: 700; font-size: 14px; color: var(--text-primary); border-top: 1px dashed var(--border); padding-top: 14px;">
       ⏰ 每日大节上课时间
     </div>
@@ -1093,8 +1438,10 @@
     </div>
   </div>
 
-  <!-- 课表容器与周导航 -->
-  <div class="wnav" id="wnav"></div>
+  <!-- 桌面端周次条（移动端自动隐藏） -->
+  <div class="wnav desktop-only" id="wnav"></div>
+
+  <!-- 课表主网格（移动端直接顶格，第一眼秒看课表） -->
   <div id="schedule"></div>
 </div>
 
@@ -1152,6 +1499,28 @@
       <button onclick="closeLoginOverlay()" style="background:rgba(255,255,255,.15);color:#fff;border-radius:8px;padding:5px 14px;border:none;cursor:pointer;font-size:13px;font-weight:500;transition:0.2s;">✕ 关闭窗口</button>
     </div>
     <webview id="loginWebview" src="about:blank" style="flex:1;width:100%;display:inline-flex" partition="persist:jwxt" allowpopups></webview>
+  </div>
+</div>
+
+<!-- 移动端周次快速选择九宫格弹窗 -->
+<div id="weekPickerModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeWeekPicker()">
+  <div class="modal-box week-picker-box">
+    <div class="week-picker-header">
+      <h3>📅 选择查看周次</h3>
+      <span class="modal-close" onclick="closeWeekPicker()">&times;</span>
+    </div>
+    <div class="week-grid" id="weekGrid"></div>
+  </div>
+</div>
+
+<!-- 移动端今日概览与统计弹窗 -->
+<div id="statsModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeStatsModal()">
+  <div class="modal-box stats-modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h3 style="margin:0;font-size:16px;font-weight:700;">📊 今日课程与学期概览</h3>
+      <span class="modal-close" onclick="closeStatsModal()">&times;</span>
+    </div>
+    <div id="modalCardsContainer" class="modal-cards-container"></div>
   </div>
 </div>
 
@@ -1530,7 +1899,11 @@ function renderCards() {
     <div class="card-sub">${xnm}-${+xnm+1}学年 · ${semName}</div>
   </div>`);
 
-  document.getElementById('cards').innerHTML = html.join('');
+  const cardsHtml = html.join('');
+  const dc = document.getElementById('cards');
+  if (dc) dc.innerHTML = cardsHtml;
+  const mc = document.getElementById('modalCardsContainer');
+  if (mc) mc.innerHTML = cardsHtml;
 }
 
 // ============ 周次导航 ============
@@ -1571,6 +1944,12 @@ function filterAndRender() {
     <span>📅 <strong>${now.getMonth()+1}月${now.getDate()}日</strong> · ${dayNames[now.getDay()]}</span>
     <span class="clock-badge" id="topClock">北京时间 ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}</span>
   `;
+
+  // 移动端超轻顶栏状态同步
+  const mWeek = document.getElementById('mWeekNum');
+  if (mWeek) mWeek.textContent = `第 ${w} 周`;
+  const mDate = document.getElementById('mDateSub');
+  if (mDate) mDate.textContent = `${now.getMonth()+1}月${now.getDate()}日 ${dayNames[now.getDay()]}`;
 
   renderCards();
   renderWeekNav();
@@ -1682,12 +2061,8 @@ function renderSchedule(courses, w, dates, curWeek) {
 
       el.innerHTML = `
         <div class="course-name">${c.kcmc}</div>
-        ${c.cdmc ? `<div class="course-badge">📍 ${c.cdmc}</div>` : ''}
-        <div class="course-info">
-          <span>${c.xm ? `👨‍🏫 ${c.xm}` : ''}</span>
-          ${c.xm && c.zcd ? '<span>·</span>' : ''}
-          <span>${c.zcd || ''}</span>
-        </div>
+        ${c.cdmc ? `<div class="course-room">@${c.cdmc}</div>` : ''}
+        ${c.xm ? `<div class="course-teacher">${c.xm}</div>` : ''}
       `;
       grid.appendChild(el);
     });
@@ -1697,6 +2072,51 @@ function renderSchedule(courses, w, dates, curWeek) {
 function toMin(t) { 
   const [h, m] = t.split(':').map(Number); 
   return h * 60 + m; 
+}
+
+// ============ 移动端周次弹窗与统计弹窗 ============
+function openWeekPicker() {
+  const modal = document.getElementById('weekPickerModal');
+  const grid = document.getElementById('weekGrid');
+  if (!modal || !grid) return;
+  const cur = getCurrentWeek();
+  const sel = +document.getElementById('weekSelector').value || cur;
+  let items = [];
+  for (let i = 1; i <= 25; i++) {
+    const isCur = i === cur;
+    const isSel = i === sel;
+    items.push(`
+      <div class="week-grid-item ${isSel ? 'active' : ''}" onclick="selectWeekFromPicker(${i})">
+        <span>第${i}周</span>
+        ${isCur ? '<span class="cur-tag">当前周</span>' : ''}
+      </div>
+    `);
+  }
+  grid.innerHTML = items.join('');
+  modal.style.display = 'flex';
+}
+
+function closeWeekPicker() {
+  const modal = document.getElementById('weekPickerModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function selectWeekFromPicker(w) {
+  closeWeekPicker();
+  setWeek(w);
+}
+
+function openStatsModal() {
+  const modal = document.getElementById('statsModal');
+  if (modal) {
+    renderCards();
+    modal.style.display = 'flex';
+  }
+}
+
+function closeStatsModal() {
+  const modal = document.getElementById('statsModal');
+  if (modal) modal.style.display = 'none';
 }
 
 // ============ 课程详情弹窗控制 ============
@@ -1884,7 +2304,7 @@ function importSchedule() {
       clearInterval(cookiePollTimer);
       cookiePollTimer = null;
     }
-    wv.src = 'https://sfrz.cug.edu.cn/authserver/login?service=https%3A%2F%2Fi.cug.edu.cn%2Fweb%2F%3FCASLOGIN%3DCASLOGIN';
+    wv.src = 'https://sfrz.cug.edu.cn/tpass/login?service=https%3A%2F%2Fi.cug.edu.cn%2Fweb%2F%3FCASLOGIN%3DCASLOGIN%23%2Flogin%3FredirectUrl%3D%252Fweb%252F%253FCASLOGIN%253DCASLOGIN%2523%252Fcurrent%252Fsys-portal';
     let isFetching = false;
     const check = async () => {
       if (isFetching || !window.electronAPI || !window.electronAPI.getJwxtCookie) return;
