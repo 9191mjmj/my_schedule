@@ -42,6 +42,7 @@ jobs:
           sed -i 's/\r$//' gradlew
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
+          cp app/build/outputs/apk/debug/app-debug.apk ../cug-schedule.apk
 
       - name: 📤 上传打包好的 APK 安装包供直接下载
         uses: actions/upload-artifact@v4
@@ -55,6 +56,8 @@ jobs:
         with:
           name: "📱 地大课表 Android 最新版"
           tag_name: "latest"
-          files: android/app/build/outputs/apk/debug/app-debug.apk
+          files: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            cug-schedule.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

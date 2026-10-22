@@ -180,11 +180,6 @@ public class JwxtPlugin extends Plugin {
 
                     if (curUrl != null && curUrl.contains("i.cug.edu.cn")) {
                         triggerClickJw(webView);
-                        pollHandler.postDelayed(() -> {
-                            if (activeWebView != null && activeWebView.getUrl() != null && activeWebView.getUrl().contains("i.cug.edu.cn")) {
-                                activeWebView.loadUrl("https://jwgl.cug.edu.cn/jwglxt/xtgl/login_slogin.html");
-                            }
-                        }, 800);
                     } else if (curUrl != null && curUrl.contains("sfrz.cug.edu.cn")) {
                         Toast.makeText(getActivity(), "请先完成账号密码及验证码登录", Toast.LENGTH_SHORT).show();
                         fabBg.setColor(Color.parseColor("#2563eb"));
@@ -280,6 +275,13 @@ public class JwxtPlugin extends Plugin {
         String js = "javascript:(function(){" +
                 "var links = document.querySelectorAll('a[href*=\"jwgl\"], a[href*=\"jwxt\"]');" +
                 "if(links.length > 0){ links[0].click(); return; }" +
+                "if(!document.getElementById('cug-guide-banner')){" +
+                "  var bar = document.createElement('div');" +
+                "  bar.id = 'cug-guide-banner';" +
+                "  bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999999;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;padding:12px 16px;font-size:14px;font-weight:bold;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.3);line-height:1.4;';" +
+                "  bar.innerHTML = '📌 页面按钮较多：请点击【教务管理】图标！';" +
+                "  document.body.appendChild(bar);" +
+                "}" +
                 "function clickTarget(){" +
                 "  var keywords = ['教务管理', '综合教务', '教务系统', '学生课表', '学生个人课表'];" +
                 "  var all = document.querySelectorAll('*');" +
@@ -322,7 +324,7 @@ public class JwxtPlugin extends Plugin {
                 "    if(clickTarget() || c > 30) clearInterval(tId);" +
                 "  }, 400);" +
                 "}" +
-                "})()";
+                "})();";
         webView.evaluateJavascript(js, null);
     }
 

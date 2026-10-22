@@ -7,8 +7,20 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  
+  /* 优雅全平台超细平滑滚动条 */
+  ::-webkit-scrollbar {
+    width: 0px !important;
+    height: 0px !important;
+    display: none !important;
+  }
+  * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
   :root {
-    --rh: 74px;
+    --rh: 64px;
     --tc: 84px;
     --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
@@ -634,6 +646,77 @@
   }
 
   /* ====== 课程卡片 (Modern Gradient Glass Cards) ====== */
+
+  /* 正在上课高亮卡片（全屏焦点轮廓 + 微呼吸光晕） */
+  .course.is-active-now {
+    z-index: 10 !important;
+    transform: scale(1.025) !important;
+    box-shadow: 0 0 0 2.5px #ffffff, 0 8px 24px var(--shadow-c) !important;
+    animation: activeCourseGlow 2.4s infinite ease-in-out !important;
+  }
+
+  [data-theme="dark"] .course.is-active-now {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9), 0 0 20px var(--shadow-c) !important;
+  }
+
+  @keyframes activeCourseGlow {
+    0%, 100% {
+      box-shadow: 0 0 0 2.5px #ffffff, 0 6px 18px var(--shadow-c);
+      filter: brightness(1.04);
+    }
+    50% {
+      box-shadow: 0 0 0 3px #ffffff, 0 10px 28px var(--shadow-c);
+      filter: brightness(1.1);
+    }
+  }
+
+  /* 上课中动态状态徽标（单行微型精致胶囊） */
+  .live-course-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    background: rgba(0, 0, 0, 0.42) !important;
+    backdrop-filter: blur(4px) !important;
+    color: #ffffff !important;
+    font-size: 8px !important;
+    font-weight: 700 !important;
+    padding: 1px 5px !important;
+    border-radius: 9999px !important;
+    margin-bottom: 2px !important;
+    align-self: center !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+    letter-spacing: 0.2px !important;
+  }
+
+  .live-course-badge .badge-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 4px #22c55e;
+    flex-shrink: 0;
+    animation: liveBadgeDot 1.4s infinite ease-in-out;
+  }
+
+  @keyframes liveBadgeDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.65); }
+  }
+
+  .period.now {
+    background: var(--accent-light) !important;
+    border-left: 3px solid var(--accent) !important;
+  }
+  .period.now b {
+    color: var(--accent) !important;
+    font-weight: 800 !important;
+  }
+  .period.now .time {
+    color: var(--accent) !important;
+  }
+
   .course {
     margin: 4px;
     padding: 8px 9px;
@@ -650,13 +733,7 @@
     box-shadow: 0 4px 12px var(--shadow-c, rgba(0, 0, 0, 0.15));
     transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s, filter 0.22s;
     cursor: pointer;
-    animation: cardFadeIn 0.35s ease backwards;
     backdrop-filter: blur(6px);
-  }
-
-  @keyframes cardFadeIn {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
   }
 
   .course:hover {
@@ -987,19 +1064,20 @@
 
   @media (max-width: 768px) {
     :root {
-      --tc: 32px;
-      --rh: 72px;
+      --tc: 34px;
+      --rh: 58px;
     }
 
     body {
       padding: 0;
       margin: 0;
       overflow-x: hidden;
+      background: var(--bg);
     }
 
     .app {
       max-width: 100% !important;
-      padding: 0 0 20px 0 !important;
+      padding: 0 0 30px 0 !important;
       margin: 0 !important;
     }
 
@@ -1008,27 +1086,28 @@
       display: none !important;
     }
 
-    /* 启用移动端超轻量顶部栏（高度仅 48px，零滚动直达） */
+    /* 启用移动端专属优雅顶栏（适配状态栏刘海屏，留足呼吸空隙） */
     .mobile-header {
       display: flex !important;
       align-items: center;
       justify-content: space-between;
-      height: 48px;
-      padding: 6px 12px;
-      background: var(--surface);
+      height: auto !important;
+      min-height: 52px;
+      padding: calc(env(safe-area-inset-top, 0px) + 14px) 14px 10px 14px !important;
+      background: var(--surface) !important;
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
     }
 
     .mobile-header-left {
       display: flex;
       flex-direction: column;
       cursor: pointer;
-      padding: 2px 6px;
+      padding: 2px 4px;
       border-radius: 8px;
       transition: background 0.15s;
     }
@@ -1038,21 +1117,21 @@
     }
 
     .mobile-week-title {
-      font-size: 16px;
-      font-weight: 800;
+      font-size: 18px !important;
+      font-weight: 800 !important;
       color: var(--text-primary);
       display: flex;
       align-items: center;
-      gap: 4px;
-      letter-spacing: -0.2px;
+      gap: 5px;
+      letter-spacing: -0.3px;
     }
 
     .mobile-date-sub {
-      font-size: 11px;
+      font-size: 12px !important;
       color: var(--text-muted);
       font-weight: 500;
-      line-height: 1.1;
-      margin-top: 1px;
+      line-height: 1.2;
+      margin-top: 2px;
     }
 
     .mobile-header-actions {
@@ -1072,7 +1151,7 @@
       align-items: center;
       justify-content: center;
       transition: all 0.2s;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
 
     .m-icon-btn.primary {
@@ -1090,7 +1169,7 @@
       transform: scale(0.92);
     }
 
-    /* 课表全屏网格重构（填满手机宽度，告别 Excel 笨重粗边框） */
+    /* 课表全屏网格重构（填满手机宽度） */
     #schedule {
       border-radius: 0 !important;
       border: none !important;
@@ -1101,114 +1180,162 @@
 
     /* 星期与日期表头 */
     .header {
-      padding: 6px 1px !important;
-      font-size: 12px !important;
-      font-weight: 600 !important;
+      padding: 8px 1px 6px 1px !important;
       background: var(--surface) !important;
       border-right: 1px solid var(--schedule-cell-border) !important;
       border-bottom: 1px solid var(--schedule-cell-border) !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    .header .date {
-      font-size: 10px !important;
-      margin-top: 1px !important;
+    .corner-month {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.1;
+    }
+
+    .corner-month .m-val {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .corner-month .m-unit {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .day-col-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .day-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .day-date {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+      min-width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
     }
 
     /* 今天的高亮胶囊指示 */
     .header.today {
       background: var(--today-column-bg) !important;
-      border-bottom: 2px solid var(--accent) !important;
     }
 
-    .header.today span:first-child {
+    .header.today .day-name {
       color: var(--accent) !important;
       font-weight: 800 !important;
     }
 
-    .header.today .date {
-      background: var(--accent) !important;
-      color: #fff !important;
-      border-radius: 999px !important;
-      padding: 1px 5px !important;
-      font-weight: 700 !important;
-      margin-top: 2px !important;
+    .header.today .day-date {
+      background: var(--text-primary) !important;
+      color: var(--surface) !important;
     }
 
     /* 左侧时间轴紧凑排版 */
     .period {
-      padding: 4px 1px !important;
-      font-size: 10px !important;
+      padding: 6px 1px !important;
       background: var(--surface) !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-right: 1px solid var(--schedule-cell-border) !important;
+      border-bottom: 1px solid var(--schedule-cell-border) !important;
     }
 
     .period b {
       font-size: 13px !important;
+      font-weight: 700 !important;
       color: var(--text-secondary) !important;
     }
 
     .period .time {
-      font-size: 8.5px !important;
-      margin-top: 2px !important;
-      line-height: 1.1 !important;
-      transform: scale(0.92);
+      font-size: 9px !important;
+      color: var(--text-muted) !important;
+      margin-top: 3px !important;
+      line-height: 1.15 !important;
+      text-align: center;
     }
 
     /* 网格单元格微弱细线 */
     .cell {
       min-height: var(--rh) !important;
-      border-right: 1px dashed rgba(200, 200, 200, 0.22) !important;
-      border-bottom: 1px dashed rgba(200, 200, 200, 0.22) !important;
+      border-right: 1px dashed rgba(180, 190, 205, 0.25) !important;
+      border-bottom: 1px dashed rgba(180, 190, 205, 0.25) !important;
     }
 
-    /* 课程卡片视觉重磅升级（WakeUp 现代质感） */
+    /* 课程卡片视觉重磅升级（吸收 WakeUp 充裕高度 + 原创微磨砂胶囊层级） */
     .course {
-      margin: 1.5px 1px !important;
-      padding: 5px 3.5px !important;
-      border-radius: 9px !important;
-      border: 1px solid rgba(255, 255, 255, 0.25) !important;
-      box-shadow: 0 3px 10px var(--shadow-c, rgba(0,0,0,0.14)) !important;
+      margin: 2px 1.5px !important;
+      padding: 6px 3.5px !important;
+      border-radius: 8px !important;
+      border: none !important;
+      box-shadow: 0 1px 4px var(--shadow-c, rgba(0,0,0,0.06)) !important;
       display: flex !important;
       flex-direction: column !important;
       justify-content: flex-start !important;
       overflow: hidden !important;
-      backdrop-filter: blur(8px) !important;
+      animation: none !important;
+      opacity: 1 !important;
     }
 
     .course-name {
-      font-size: 11px !important;
+      display: block !important;
+      -webkit-line-clamp: unset !important;
+      max-height: none !important;
+      font-size: 11.5px !important;
       font-weight: 700 !important;
-      line-height: 1.22 !important;
-      display: -webkit-box !important;
-      -webkit-line-clamp: 3 !important;
-      -webkit-box-orient: vertical !important;
-      overflow: hidden !important;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25) !important;
-      margin-bottom: auto !important;
+      line-height: 1.25 !important;
       word-break: break-all !important;
+      white-space: normal !important;
+      color: #ffffff !important;
+      margin-bottom: 3px !important;
+      text-align: center;
     }
 
     .course-room {
       font-size: 9.5px !important;
       font-weight: 600 !important;
-      opacity: 0.95 !important;
-      line-height: 1.15 !important;
-      margin-top: 2px !important;
-      white-space: nowrap !important;
-      overflow: hidden !important;
-      text-overflow: ellipsis !important;
-      background: rgba(0, 0, 0, 0.18) !important;
-      padding: 1px 4px !important;
-      border-radius: 4px !important;
+      line-height: 1.22 !important;
+      word-break: break-all !important;
+      white-space: normal !important;
+      color: #ffffff !important;
+      background: rgba(0, 0, 0, 0.14) !important;
+      padding: 2.5px 2px !important;
+      border-radius: 5px !important;
+      margin-top: auto !important;
+      margin-bottom: 2px !important;
+      text-align: center;
     }
 
     .course-teacher {
       font-size: 9px !important;
-      opacity: 0.88 !important;
-      line-height: 1.1 !important;
-      margin-top: 1.5px !important;
-      white-space: nowrap !important;
-      overflow: hidden !important;
-      text-overflow: ellipsis !important;
+      opacity: 0.9 !important;
+      line-height: 1.15 !important;
+      word-break: break-all !important;
+      white-space: normal !important;
+      color: #ffffff !important;
+      text-align: center;
+      margin-top: 1px !important;
     }
 
     .detail-grid { grid-template-columns: 1fr !important; }
@@ -1529,36 +1656,38 @@
 const DEFAULT_SEMESTER_START = '2026-09-01';
 
 const DEFAULT_TIMES = [
-  { period: 1, start: '08:00', end: '09:40' },
-  { period: 2, start: '10:00', end: '11:40' },
-  { period: 3, start: '14:00', end: '15:40' },
-  { period: 4, start: '16:00', end: '17:40' },
-  { period: 5, start: '19:00', end: '20:40' },
-  { period: 6, start: '20:50', end: '22:30' }
+  { period: 1, start: '08:30', end: '09:15' },
+  { period: 2, start: '09:20', end: '10:05' },
+  { period: 3, start: '10:15', end: '11:00' },
+  { period: 4, start: '11:05', end: '11:50' },
+  { period: 5, start: '14:00', end: '14:45' },
+  { period: 6, start: '14:50', end: '15:35' },
+  { period: 7, start: '15:45', end: '16:30' },
+  { period: 8, start: '16:35', end: '17:20' },
+  { period: 9, start: '18:30', end: '19:15' },
+  { period: 10, start: '19:20', end: '20:05' },
+  { period: 11, start: '20:15', end: '21:00' },
+  { period: 12, start: '21:05', end: '21:50' }
 ];
 
 let PERIOD_TIMES = loadSettings();
 let allCourses = [];
 let cookiePollTimer = null;
 
-// 18 款高对比度冷暖交替色板（在色相环上跨越 120°~180°，绝对杜绝颜色撞色与相近）
+// 12 款纯平莫兰迪/马卡龙高级色板（纯净透气，高对比度防撞色，完全消除刺眼光晕）
 const HIGH_CONTRAST_PALETTES = [
-  { bg: 'linear-gradient(135deg, #1D4ED8 0%, #3B82F6 100%)', shadow: 'rgba(37, 99, 235, 0.45)', solid: '#2563EB', name: '宝蓝' },
-  { bg: 'linear-gradient(135deg, #C2410C 0%, #F97316 100%)', shadow: 'rgba(234, 88, 12, 0.45)', solid: '#EA580C', name: '活力橙' },
-  { bg: 'linear-gradient(135deg, #047857 0%, #10B981 100%)', shadow: 'rgba(16, 185, 129, 0.45)', solid: '#10B981', name: '翡翠绿' },
-  { bg: 'linear-gradient(135deg, #6D28D9 0%, #8B5CF6 100%)', shadow: 'rgba(124, 58, 237, 0.45)', solid: '#7C3AED', name: '电光紫' },
-  { bg: 'linear-gradient(135deg, #BE123C 0%, #F43F5E 100%)', shadow: 'rgba(225, 29, 72, 0.45)', solid: '#E11D48', name: '玫瑰红' },
-  { bg: 'linear-gradient(135deg, #0E7490 0%, #06B6D4 100%)', shadow: 'rgba(8, 145, 178, 0.45)', solid: '#0891B2', name: '湖水青' },
-  { bg: 'linear-gradient(135deg, #B45309 0%, #F59E0B 100%)', shadow: 'rgba(217, 119, 6, 0.45)', solid: '#D97706', name: '金黄琥珀' },
-  { bg: 'linear-gradient(135deg, #A21CAF 0%, #D946EF 100%)', shadow: 'rgba(192, 38, 211, 0.45)', solid: '#C026D3', name: '鲜洋红' },
-  { bg: 'linear-gradient(135deg, #4D7C0F 0%, #84CC16 100%)', shadow: 'rgba(101, 163, 13, 0.45)', solid: '#65A30D', name: '青柠绿' },
-  { bg: 'linear-gradient(135deg, #3730A3 0%, #6366F1 100%)', shadow: 'rgba(79, 70, 229, 0.45)', solid: '#4F46E5', name: '深靛蓝' },
-  { bg: 'linear-gradient(135deg, #991B1B 0%, #EF4444 100%)', shadow: 'rgba(220, 38, 38, 0.45)', solid: '#DC2626', name: '朱砂红' },
-  { bg: 'linear-gradient(135deg, #115E59 0%, #14B8A6 100%)', shadow: 'rgba(13, 148, 136, 0.45)', solid: '#0D9488', name: '墨松绿' },
-  { bg: 'linear-gradient(135deg, #78350F 0%, #D97706 100%)', shadow: 'rgba(180, 83, 9, 0.45)', solid: '#B45309', name: '焦糖棕' },
-  { bg: 'linear-gradient(135deg, #581C87 0%, #9333EA 100%)', shadow: 'rgba(147, 51, 234, 0.45)', solid: '#9333EA', name: '深李紫' },
-  { bg: 'linear-gradient(135deg, #0369A1 0%, #0284C7 100%)', shadow: 'rgba(2, 132, 199, 0.45)', solid: '#0284C7', name: '蔚天蓝' },
-  { bg: 'linear-gradient(135deg, #9F1239 0%, #FB7185 100%)', shadow: 'rgba(244, 63, 94, 0.45)', solid: '#F43F5E', name: '珊瑚粉' }
+  { bg: '#f87171', shadow: 'rgba(248, 113, 113, 0.28)', solid: '#f87171', name: '珊瑚粉' },
+  { bg: '#38bdf8', shadow: 'rgba(56, 189, 248, 0.28)', solid: '#38bdf8', name: '晴空蓝' },
+  { bg: '#34d399', shadow: 'rgba(52, 211, 153, 0.28)', solid: '#34d399', name: '薄荷绿' },
+  { bg: '#a78bfa', shadow: 'rgba(167, 139, 250, 0.28)', solid: '#a78bfa', name: '丁香紫' },
+  { bg: '#fb923c', shadow: 'rgba(251, 146, 60, 0.28)', solid: '#fb923c', name: '暖杏橙' },
+  { bg: '#f43f5e', shadow: 'rgba(244, 63, 94, 0.28)', solid: '#f43f5e', name: '山茶红' },
+  { bg: '#2dd4bf', shadow: 'rgba(45, 212, 191, 0.28)', solid: '#2dd4bf', name: '碧湖青' },
+  { bg: '#6366f1', shadow: 'rgba(99, 102, 241, 0.28)', solid: '#6366f1', name: '湛靛蓝' },
+  { bg: '#f59e0b', shadow: 'rgba(245, 158, 11, 0.28)', solid: '#f59e0b', name: '琥珀金' },
+  { bg: '#ec4899', shadow: 'rgba(236, 72, 153, 0.28)', solid: '#ec4899', name: '蔷薇粉' },
+  { bg: '#10b981', shadow: 'rgba(16, 185, 129, 0.28)', solid: '#10b981', name: '翡翠绿' },
+  { bg: '#8b5cf6', shadow: 'rgba(139, 92, 246, 0.28)', solid: '#8b5cf6', name: '紫晶紫' }
 ];
 
 const courseColorCache = new Map();
@@ -1633,7 +1762,12 @@ function getSemesterConfig() {
 
 function loadSettings() {
   const saved = localStorage.getItem('my_schedule_times');
-  if (saved) { try { return JSON.parse(saved); } catch(e) {} }
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length >= 10) return parsed;
+    } catch(e) {}
+  }
   return [...DEFAULT_TIMES];
 }
 
@@ -1963,30 +2097,46 @@ function renderSchedule(courses, w, dates, curWeek) {
   const todayIdx = now.getDay() === 0 ? 7 : now.getDay();
   const curMin = now.getHours() * 60 + now.getMinutes();
 
-  // 表头
-  const days = ['节次', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-  days.forEach((d, i) => {
+  // 从当前周提取月份与日期，构建极简高效表头
+  const firstDate = dates[0] || '10/19';
+  const curMonth = firstDate.split('/')[0] || (now.getMonth() + 1);
+  const weekDayNames = ['一', '二', '三', '四', '五', '六', '日'];
+
+  for (let i = 0; i <= 7; i++) {
     const el = document.createElement('div');
     el.className = 'header';
     if (i === 0) {
-      el.innerHTML = `<span>${d}</span><span class="date">时段</span>`;
+      el.innerHTML = `
+        <div class="corner-month">
+          <span class="m-val">${curMonth}</span>
+          <span class="m-unit">月</span>
+        </div>
+      `;
     } else {
       const isToday = w === curWeek && i === todayIdx;
       if (isToday) el.classList.add('today');
-      el.innerHTML = `<span>${d}</span><span class="date">${dates[i-1]}</span>`;
+      const dParts = (dates[i - 1] || '').split('/');
+      const dayNum = dParts[1] || dParts[0] || '';
+      el.innerHTML = `
+        <div class="day-col-header">
+          <span class="day-name">${weekDayNames[i - 1]}</span>
+          <span class="day-date">${dayNum}</span>
+        </div>
+      `;
     }
     el.style.gridRow = 1;
     el.style.gridColumn = i + 1;
     grid.appendChild(el);
-  });
+  }
 
-  // 节次 + 单元格背景
-  for (let p = 1; p <= 6; p++) {
+  // 节次 + 单元格背景（按照地大作息展开 1-12 节，2节课自然合成一大节跨度）
+  const totalPeriods = Math.max(10, PERIOD_TIMES.length);
+  for (let p = 1; p <= totalPeriods; p++) {
     const t = PERIOD_TIMES.find(x => x.period === p) || { start: '', end: '' };
     const isNow = w === curWeek && curMin >= toMin(t.start) && curMin <= toMin(t.end);
     const lbl = document.createElement('div');
     lbl.className = 'period' + (isNow ? ' now' : '');
-    lbl.innerHTML = `<b>${String(p).padStart(2,'0')}</b><span class="time">${t.start}<br>${t.end}</span>`;
+    lbl.innerHTML = `<b>${p}</b><span class="time">${t.start}<br>${t.end}</span>`;
     lbl.style.gridRow = p + 1;
     lbl.style.gridColumn = 1;
     grid.appendChild(lbl);
@@ -2012,35 +2162,34 @@ function renderSchedule(courses, w, dates, curWeek) {
     return;
   }
 
-  // 统计重叠冲突课程（按星期和起止节次分组）
+  // 统计重叠冲突课程（按星期和起止节次分组，真实 1-12 节跨度）
   const slotMap = {};
   courses.forEach(c => {
-    let start = 1, end = 1;
+    let start = 1, end = 2;
     if (c.jcs) {
       const parts = c.jcs.split('-');
       start = +parts[0];
       end = parts.length > 1 ? +parts[1] : start;
     }
-    let bs = Math.ceil(start / 2), be = Math.ceil(end / 2);
-    if (bs < 1) bs = 1;
-    if (be > 6) be = 6;
     const day = +c.xqj || 1;
-    const key = `${day}_${bs}_${be}`;
+    const key = `${day}_${start}_${end}`;
     if (!slotMap[key]) slotMap[key] = [];
-    slotMap[key].push({ course: c, bs, be, day });
+    slotMap[key].push({ course: c, start, end, day });
   });
 
-  // 渲染课程色块（支持冲突课程横向并排分割）
+  // 渲染课程色块（2节课为一大课，span 2，跨行自然丰满）
   Object.values(slotMap).forEach(list => {
     const count = list.length;
     list.forEach((item, idx) => {
-      const { course: c, bs, be, day } = item;
+      const { course: c, start, end, day } = item;
       const theme = getCourseTheme(c.kcmc);
+      const span = Math.max(1, end - start + 1);
+
       const el = document.createElement('div');
       el.className = 'course';
       if (w === curWeek && day === todayIdx) el.classList.add('today');
       el.style.gridColumn = day + 1;
-      el.style.gridRow = `${bs + 1} / span ${be - bs + 1}`;
+      el.style.gridRow = `${start + 1} / span ${span}`;
       el.style.background = theme.bg;
       el.style.setProperty('--shadow-c', theme.shadow);
       el.onclick = () => showCourseDetail(c);
@@ -2054,14 +2203,17 @@ function renderSchedule(courses, w, dates, curWeek) {
         el.title = `【存在重叠课程 ${idx+1}/${count}】\n课程: ${c.kcmc}\n地点: ${c.cdmc || '待定'}\n教师: ${c.xm || '待定'}\n节次: ${c.jc || c.jcs || ''}`;
       }
 
-      const tStart = PERIOD_TIMES[bs-1] ? PERIOD_TIMES[bs-1].start : '00:00';
-      const tEnd = PERIOD_TIMES[be-1] ? PERIOD_TIMES[be-1].end : '23:59';
+      const tStart = PERIOD_TIMES[start - 1] ? PERIOD_TIMES[start - 1].start : '00:00';
+      const tEnd = PERIOD_TIMES[end - 1] ? PERIOD_TIMES[end - 1].end : '23:59';
       const isNow = w === curWeek && day === todayIdx && curMin >= toMin(tStart) && curMin <= toMin(tEnd);
-      if (isNow) el.style.animation = 'livePulse 1.8s infinite';
+      if (isNow) el.classList.add('is-active-now');
 
+      let roomText = c.cdmc || '';
+      if (roomText && !roomText.startsWith('@')) roomText = '@' + roomText;
       el.innerHTML = `
+        ${isNow ? '<div class="live-course-badge"><span class="badge-dot"></span>上课中</div>' : ''}
         <div class="course-name">${c.kcmc}</div>
-        ${c.cdmc ? `<div class="course-room">@${c.cdmc}</div>` : ''}
+        ${roomText ? `<div class="course-room">${roomText}</div>` : ''}
         ${c.xm ? `<div class="course-teacher">${c.xm}</div>` : ''}
       `;
       grid.appendChild(el);
