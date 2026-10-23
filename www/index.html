@@ -1399,6 +1399,7 @@
 
   /* 移动端统计概览弹窗 */
   .stats-modal-box {
+    background: var(--surface-solid, #ffffff) !important;
     max-width: 440px !important;
     width: 92% !important;
     padding: 20px 22px !important;
@@ -1939,33 +1940,60 @@ function renderCards() {
   const curWeek = getCurrentWeek();
   const selWeek = +document.getElementById('weekSelector').value || curWeek;
 
-  // 下一节课：永远基于真实的当前周与今天的后续课程计算
-  let nextCourse = null, minDiff = Infinity;
-  allCourses
+  // 获取今天且在本周的所有课程，并按开始时间升序排列（精准对应 1-12 节）
+  const todayCourses = allCourses
     .filter(c => +c.xqj === curDay && isWeekInZcd(curWeek, c.zcd))
-    .forEach(c => {
-      const startP = +c.jcs.split('-')[0];
-      const bp = Math.ceil(startP / 2);
-      const t = PERIOD_TIMES.find(x => x.period === bp);
-      if (!t) return;
-      const [h, m] = t.start.split(':').map(Number);
-      const sm = h * 60 + m;
-      if (sm > curMin && sm - curMin < minDiff) { 
-        minDiff = sm - curMin; 
-        nextCourse = c; 
-      }
-    });
+    .map(c => {
+      const parts = (c.jcs || c.jc || '1-2').split('-');
+      const startP = +parts[0] || 1;
+      const endP = parts.length > 1 ? +parts[parts.length - 1] : startP;
+      const tStartObj = PERIOD_TIMES.find(x => x.period === startP) || { start: '08:30', end: '09:15' };
+      const tEndObj = PERIOD_TIMES.find(x => x.period === endP) || tStartObj;
+      const sm = toMin(tStartObj.start);
+      const em = toMin(tEndObj.end);
+      return { course: c, startP, endP, tStart: tStartObj.start, tEnd: tEndObj.end, sm, em };
+    })
+    .sort((a, b) => a.sm - b.sm);
 
-  // 今日课程数（根据真实今天本周统计）
-  const todayCount = allCourses.filter(c => +c.xqj === curDay && isWeekInZcd(curWeek, c.zcd)).length;
+  // 1. 判断是否有正在进行的课程 (curMin 在 [sm, em] 之间)
+  const activeItem = todayCourses.find(item => curMin >= item.sm && curMin <= item.em);
+
+  // 2. 判断下一节即将开始的课程 (sm > curMin 的第一门课)
+  const nextItem = todayCourses.find(item => item.sm > curMin);
 
   const html = [];
 
-  // 卡片 1：下一节课
-  if (nextCourse) {
-    const bp = Math.ceil(+nextCourse.jcs.split('-')[0] / 2);
-    const t = PERIOD_TIMES.find(x => x.period === bp) || { start: '' };
-    const theme = getCourseTheme(nextCourse.kcmc);
+  // 卡片 1：正在上课 / 下一节课 / 今日已结束
+  if (activeItem) {
+    const { course: c, tEnd, em } = activeItem;
+    const remainMin = Math.max(0, em - curMin);
+    const theme = getCourseTheme(c.kcmc);
+    
+    // 如果今天在当前课之后还有课，带上后续提醒
+    let nextTip = '';
+    if (nextItem) {
+      nextTip = ` · 下节: ${nextItem.course.kcmc} (${nextItem.tStart})`;
+    }
+
+    html.push(`<div class="card" style="--c:${theme.solid}">
+      <div class="card-top">
+        <div class="card-label"><span class="live-dot" style="background:#22c55e;box-shadow:0 0 8px #22c55e;"></span>正在上课 · 进行中</div>
+        <div class="card-icon" style="background:rgba(34,197,94,0.12);color:#22c55e;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+      </div>
+      <div class="card-main" title="${c.kcmc}">${c.kcmc}</div>
+      <div class="card-sub">
+        <span>📍 <strong>${c.cdmc || '教室待定'}</strong></span>
+        <span>·</span>
+        <span>⏳ 距下课 <strong>${remainMin}</strong> 分钟</span>
+        ${nextTip ? `<span style="opacity:0.85">${nextTip}</span>` : ''}
+      </div>
+    </div>`);
+  } else if (nextItem) {
+    const { course: c, tStart, sm } = nextItem;
+    const waitMin = Math.max(0, sm - curMin);
+    const theme = getCourseTheme(c.kcmc);
     html.push(`<div class="card" style="--c:${theme.solid}">
       <div class="card-top">
         <div class="card-label"><span class="live-dot"></span>下一节课</div>
@@ -1973,23 +2001,23 @@ function renderCards() {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </div>
       </div>
-      <div class="card-main" title="${nextCourse.kcmc}">${nextCourse.kcmc}</div>
+      <div class="card-main" title="${c.kcmc}">${c.kcmc}</div>
       <div class="card-sub">
-        <span>⏰ <strong>${t.start}</strong></span>
+        <span>⏰ <strong>${tStart}</strong> (还有 ${waitMin} 分钟)</span>
         <span>·</span>
-        <span>📍 ${nextCourse.cdmc || '教室待定'}</span>
+        <span>📍 ${c.cdmc || '教室待定'}</span>
       </div>
     </div>`);
   } else {
     html.push(`<div class="card" style="--c:#10b981">
       <div class="card-top">
-        <div class="card-label">下一节课</div>
+        <div class="card-label">今日日程</div>
         <div class="card-icon" style="background:rgba(16,185,129,0.12);color:#10b981;">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
         </div>
       </div>
-      <div class="card-main" style="font-size:17px;">今日后续暂无课程</div>
-      <div class="card-sub">所有日程已结束，好好放松一下吧 ✨</div>
+      <div class="card-main" style="font-size:17px;">今日课程已全部结束</div>
+      <div class="card-sub">所有日程已搞定，好好放松一下吧 ✨</div>
     </div>`);
   }
 
@@ -2003,10 +2031,10 @@ function renderCards() {
       </div>
     </div>
     <div class="card-main">${weekCourses.length} <span style="font-size:14px;font-weight:500;color:var(--text-muted)">节课</span></div>
-    <div class="card-sub">选择第 <strong>${selWeek}</strong> 周 · 共排布 ${PERIOD_TIMES.length} 大节</div>
+    <div class="card-sub">选择第 <strong>${selWeek}</strong> 周 · 共排布 ${PERIOD_TIMES.length} 节作息</div>
   </div>`);
 
-  // 卡片 3：今日课程数
+  // 卡片 3：今日日程安排
   const dayNames = ['周日','周一','周二','周三','周四','周五','周六'];
   html.push(`<div class="card" style="--c:#8b5cf6">
     <div class="card-top">
@@ -2015,11 +2043,11 @@ function renderCards() {
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       </div>
     </div>
-    <div class="card-main">${todayCount} <span style="font-size:14px;font-weight:500;color:var(--text-muted)">节课安排</span></div>
+    <div class="card-main">${todayCourses.length} <span style="font-size:14px;font-weight:500;color:var(--text-muted)">门课安排</span></div>
     <div class="card-sub">${dayNames[now.getDay()]} · 实际教学第 <strong>${curWeek}</strong> 周</div>
   </div>`);
 
-  // 卡片 4：当前时间
+  // 卡片 4：实时时钟
   const { xnm, xqm } = getSemesterConfig();
   const semName = xqm === '3' ? '秋季学期' : (xqm === '12' ? '春季学期' : '短学期');
   html.push(`<div class="card" style="--c:#f59e0b">
@@ -2284,12 +2312,11 @@ function showCourseDetail(c) {
   let p = c.jc || c.jcs || '';
   let periodText = p.includes('节') ? p : (p ? p + ' 节' : '-');
   if (c.jcs) {
-    const startP = +c.jcs.split('-')[0];
-    const endP = +c.jcs.split('-').slice(-1)[0];
-    const bs = Math.ceil(startP / 2);
-    const be = Math.ceil(endP / 2);
-    const tStart = PERIOD_TIMES[bs - 1]?.start || '';
-    const tEnd = PERIOD_TIMES[be - 1]?.end || '';
+    const parts = c.jcs.split('-');
+    const startP = +parts[0];
+    const endP = parts.length > 1 ? +parts[parts.length - 1] : startP;
+    const tStart = PERIOD_TIMES[startP - 1]?.start || '';
+    const tEnd = PERIOD_TIMES[endP - 1]?.end || '';
     if (tStart && tEnd) periodText += ` (${tStart} ~ ${tEnd})`;
   }
   document.getElementById('modalPeriods').textContent = periodText;
