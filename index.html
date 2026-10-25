@@ -1742,6 +1742,89 @@
     }
   }
 
+
+  /* ====== Sleepy 同款 Material 3 柔光触控卡片与幽灵透视 ====== */
+  .course {
+    transition: transform 0.14s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.14s ease, filter 0.14s ease !important;
+    cursor: pointer;
+  }
+
+  .course:active {
+    transform: scale(0.95) !important;
+    filter: brightness(0.95);
+  }
+
+  .course-room {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    background: rgba(0, 0, 0, 0.18) !important;
+    backdrop-filter: blur(6px) !important;
+    padding: 2px 4px !important;
+    border-radius: 6px !important;
+    font-size: 9.5px !important;
+    font-weight: 600 !important;
+    margin-top: auto !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .course-ghost {
+    background: var(--surface-hover, rgba(148, 163, 184, 0.12)) !important;
+    border: 1.5px dashed var(--border, rgba(148, 163, 184, 0.35)) !important;
+    box-shadow: none !important;
+    color: var(--text-muted) !important;
+    opacity: 0.55 !important;
+  }
+
+  .course-ghost .course-name {
+    color: var(--text-secondary) !important;
+    font-weight: 600 !important;
+  }
+
+  .course-ghost .course-room {
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-muted) !important;
+  }
+
+  .course-ghost-tag {
+    font-size: 8px;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 0 3px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 2px;
+    line-height: 1.2;
+  }
+
+  /* 回到本周智能胶囊 */
+  .m-back-cur-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    background: var(--accent);
+    color: #ffffff;
+    font-size: 10.5px;
+    font-weight: 700;
+    box-shadow: 0 2px 6px var(--accent-glow, rgba(37, 99, 235, 0.3));
+    margin-left: 6px;
+    animation: fadeInPill 0.25s ease;
+    cursor: pointer;
+  }
+
+  .m-back-cur-pill:active {
+    transform: scale(0.92);
+  }
+
+  @keyframes fadeInPill {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
 </style>
 </head>
 <body data-tab="tt">
@@ -1753,6 +1836,10 @@
       <div class="mobile-week-title">
         <span id="mWeekNum">第 1 周</span>
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        <div id="mBackToCurWeek" class="m-back-cur-pill" style="display:none;" onclick="event.stopPropagation(); setWeek(getCurrentWeek(), true)">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          <span>回本周</span>
+        </div>
       </div>
       <div class="mobile-date-sub" id="mDateSub">10月22日 周四</div>
     </div>
@@ -2174,6 +2261,27 @@ function toggleSettings() {
 }
 
 
+
+function getWeekendMode() {
+  return localStorage.getItem('my_weekend_mode') || 'auto';
+}
+
+function setWeekendMode(val) {
+  localStorage.setItem('my_weekend_mode', val);
+  filterAndRender();
+  showToast(val === 'auto' ? '已开启周末智能折叠' : (val === '5' ? '已固定5天工作日模式' : '已显示全部7天'), 'info');
+}
+
+function getGhostMode() {
+  return localStorage.getItem('my_ghost_mode') || 'hide';
+}
+
+function setGhostMode(val) {
+  localStorage.setItem('my_ghost_mode', val);
+  filterAndRender();
+  showToast(val === 'show' ? '已开启非本周课程幽灵透视' : '已关闭幽灵透视', 'info');
+}
+
 // ============ 拾光同款个性化美化调节 ============
 function applyAestheticSettings() {
   const rh = document.getElementById('settingRowHeight')?.value || '58px';
@@ -2463,6 +2571,8 @@ function renderSettingsPanel() {
   }
   const lead = localStorage.getItem('my_reminder_lead');
   if (lead && document.getElementById('settingReminderLead')) document.getElementById('settingReminderLead').value = lead;
+  if (document.getElementById('settingWeekendMode')) document.getElementById('settingWeekendMode').value = getWeekendMode();
+  if (document.getElementById('settingGhostMode')) document.getElementById('settingGhostMode').value = getGhostMode();
   renderSettingsRows();
 }
 
@@ -2823,6 +2933,8 @@ function filterAndRender() {
   // 移动端超轻顶栏状态同步
   const mWeek = document.getElementById('mWeekNum');
   if (mWeek) mWeek.textContent = `第 ${w} 周`;
+  const pill = document.getElementById('mBackToCurWeek');
+  if (pill) pill.style.display = (w !== cur) ? 'inline-flex' : 'none';
   const mDate = document.getElementById('mDateSub');
   if (mDate) mDate.textContent = `${now.getMonth()+1}月${now.getDate()}日 ${dayNames[now.getDay()]}`;
 
@@ -2859,16 +2971,31 @@ function renderWeekGrid(grid, w) {
   const curWeek = getCurrentWeek();
   const dates = getDatesForWeek(w);
   const courses = allCourses.filter(c => isWeekInZcd(w, c.zcd));
+  const ghostCourses = allCourses.filter(c => !isWeekInZcd(w, c.zcd));
   const now = new Date();
   const todayIdx = now.getDay() === 0 ? 7 : now.getDay();
   const curMin = now.getHours() * 60 + now.getMinutes();
+
+  // 周末折叠判断
+  const weekendMode = getWeekendMode();
+  let displayDays = 7;
+  if (weekendMode === '5') {
+    displayDays = 5;
+  } else if (weekendMode === 'auto') {
+    const hasWeekend = courses.some(c => +c.xqj === 6 || +c.xqj === 7);
+    displayDays = hasWeekend ? 7 : 5;
+  }
+
+  // 动态设置当前网格列数，让工作日课表瞬间变宽
+  grid.style.setProperty('--day-cols', displayDays);
+  grid.style.gridTemplateColumns = `var(--tc) repeat(${displayDays}, minmax(0, 1fr))`;
 
   // 从当前周提取月份与日期，构建极简高效表头
   const firstDate = dates[0] || '10/19';
   const curMonth = firstDate.split('/')[0] || (now.getMonth() + 1);
   const weekDayNames = ['一', '二', '三', '四', '五', '六', '日'];
 
-  for (let i = 0; i <= 7; i++) {
+  for (let i = 0; i <= displayDays; i++) {
     const el = document.createElement('div');
     el.className = 'header';
     if (i === 0) {
@@ -2895,7 +3022,7 @@ function renderWeekGrid(grid, w) {
     grid.appendChild(el);
   }
 
-  // 节次 + 单元格背景（按照地大作息展开 1-12 节）
+  // 节次 + 单元格背景（展开 1-12 节）
   const totalPeriods = Math.max(10, PERIOD_TIMES.length);
   for (let p = 1; p <= totalPeriods; p++) {
     const t = PERIOD_TIMES.find(x => x.period === p) || { start: '', end: '' };
@@ -2907,7 +3034,7 @@ function renderWeekGrid(grid, w) {
     lbl.style.gridColumn = 1;
     grid.appendChild(lbl);
 
-    for (let d = 1; d <= 7; d++) {
+    for (let d = 1; d <= displayDays; d++) {
       const cell = document.createElement('div');
       cell.className = 'cell';
       cell.style.gridRow = p + 1;
@@ -2916,18 +3043,7 @@ function renderWeekGrid(grid, w) {
     }
   }
 
-  // 空课提示
-  if (courses.length === 0) {
-    const tip = document.createElement('div');
-    tip.className = 'empty-tip';
-    tip.innerHTML = allCourses.length === 0 
-      ? `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>暂无课表数据，请点击上方「📥 导入课表」进行同步</span>` 
-      : `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>第 ${w} 周没有排课，尽情享受自由时光 ✨</span>`;
-    grid.appendChild(tip);
-    return;
-  }
-
-  // 统计重叠冲突课程
+  // 统计重叠冲突与本周课程
   const slotMap = {};
   courses.forEach(c => {
     let start = 1, end = 2;
@@ -2937,26 +3053,58 @@ function renderWeekGrid(grid, w) {
       end = parts.length > 1 ? +parts[1] : start;
     }
     const day = +c.xqj || 1;
+    if (day > displayDays) return;
     const key = `${day}_${start}_${end}`;
     if (!slotMap[key]) slotMap[key] = [];
-    slotMap[key].push({ course: c, start, end, day });
+    slotMap[key].push({ course: c, start, end, day, isGhost: false });
   });
 
-  // 渲染课程色块
+  // 幽灵透视模式：空闲时段显示非本周课程
+  if (getGhostMode() === 'show') {
+    ghostCourses.forEach(c => {
+      let start = 1, end = 2;
+      if (c.jcs) {
+        const parts = c.jcs.split('-');
+        start = +parts[0];
+        end = parts.length > 1 ? +parts[1] : start;
+      }
+      const day = +c.xqj || 1;
+      if (day > displayDays) return;
+      const key = `${day}_${start}_${end}`;
+      if (!slotMap[key]) {
+        slotMap[key] = [{ course: c, start, end, day, isGhost: true }];
+      }
+    });
+  }
+
+  // 空课提示
+  if (Object.keys(slotMap).length === 0) {
+    const tip = document.createElement('div');
+    tip.className = 'empty-tip';
+    tip.innerHTML = allCourses.length === 0 
+      ? `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>暂无课表数据，请点击上方「📥 导课」进行同步</span>` 
+      : `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>第 ${w} 周没有排课，尽情享受自由时光 ✨</span>`;
+    grid.appendChild(tip);
+    return;
+  }
+
+  // 渲染课程卡片
   Object.values(slotMap).forEach(list => {
     const count = list.length;
     list.forEach((item, idx) => {
-      const { course: c, start, end, day } = item;
+      const { course: c, start, end, day, isGhost } = item;
       const theme = getCourseTheme(c.kcmc);
       const span = Math.max(1, end - start + 1);
 
       const el = document.createElement('div');
-      el.className = 'course';
-      if (w === curWeek && day === todayIdx) el.classList.add('today');
+      el.className = 'course' + (isGhost ? ' course-ghost' : '');
+      if (w === curWeek && day === todayIdx && !isGhost) el.classList.add('today');
       el.style.gridColumn = day + 1;
       el.style.gridRow = `${start + 1} / span ${span}`;
-      el.style.background = theme.bg;
-      el.style.setProperty('--shadow-c', theme.shadow);
+      if (!isGhost) {
+        el.style.background = theme.bg;
+        el.style.setProperty('--shadow-c', theme.shadow);
+      }
       el.onclick = () => {
         if (window._isSwipingSchedule) return;
         showCourseDetail(c);
@@ -2972,16 +3120,17 @@ function renderWeekGrid(grid, w) {
 
       const tStart = PERIOD_TIMES[start - 1] ? PERIOD_TIMES[start - 1].start : '00:00';
       const tEnd = PERIOD_TIMES[end - 1] ? PERIOD_TIMES[end - 1].end : '23:59';
-      const isNow = w === curWeek && day === todayIdx && curMin >= toMin(tStart) && curMin <= toMin(tEnd);
+      const isNow = !isGhost && w === curWeek && day === todayIdx && curMin >= toMin(tStart) && curMin <= toMin(tEnd);
       if (isNow) el.classList.add('is-active-now');
 
       let roomText = c.cdmc || '';
       if (roomText && !roomText.startsWith('@')) roomText = '@' + roomText;
       el.innerHTML = `
         ${isNow ? '<div class="live-course-badge"><span class="badge-dot"></span>上课中</div>' : ''}
+        ${isGhost ? `<span class="course-ghost-tag">非本周 · ${c.zcd || ''}</span>` : ''}
         <div class="course-name">${c.kcmc}</div>
         ${roomText ? `<div class="course-room">${roomText}</div>` : ''}
-        ${c.xm ? `<div class="course-teacher">${c.xm}</div>` : ''}
+        ${c.xm && !isGhost ? `<div class="course-teacher">${c.xm}</div>` : ''}
       `;
       grid.appendChild(el);
     });
