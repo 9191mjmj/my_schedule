@@ -1085,7 +1085,7 @@
   @media (max-width: 768px) {
     :root {
       --tc: 34px;
-      --rh: 58px;
+      --rh: var(--mobile-rh, 58px);
     }
 
     body {
@@ -1380,7 +1380,7 @@
     .course {
       margin: 2px 2px !important;
       padding: 7px 4.5px !important;
-      border-radius: 9px !important;
+      border-radius: var(--course-radius, 9px) !important;
       border: none !important;
       box-shadow: 0 1px 4px var(--shadow-c, rgba(0,0,0,0.06)) !important;
       display: flex !important;
@@ -1388,7 +1388,7 @@
       justify-content: flex-start !important;
       overflow: hidden !important;
       animation: none !important;
-      opacity: 1 !important;
+      opacity: var(--course-opacity, 1) !important;
     }
 
     .course-name {
@@ -1531,6 +1531,217 @@
       transition-duration: 0.01ms !important;
     }
   }
+
+  /* ====== ClassIsland 灵动岛呼吸倒计时胶囊 ====== */
+  .dynamic-island-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 6px 14px 8px 14px;
+    background: transparent;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.25s ease;
+    z-index: 90;
+  }
+
+  .dynamic-island-bar:active {
+    transform: scale(0.985);
+  }
+
+  .dynamic-island-capsule {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+    padding: 5px 14px 5px 10px;
+    background: var(--surface);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+    font-size: 12px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  [data-theme="dark"] .dynamic-island-capsule {
+    background: rgba(30, 41, 59, 0.85);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  }
+
+  .island-dot-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .island-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .island-dot.dot-active {
+    background: #10b981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: islandPulseGreen 1.8s infinite;
+  }
+
+  .island-dot.dot-upcoming {
+    background: #f59e0b;
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+    animation: islandPulseAmber 1.8s infinite;
+  }
+
+  .island-dot.dot-later {
+    background: #3b82f6;
+  }
+
+  .island-dot.dot-done {
+    background: #8b5cf6;
+  }
+
+  .island-dot.dot-free {
+    background: #94a3b8;
+  }
+
+  @keyframes islandPulseGreen {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+
+  @keyframes islandPulseAmber {
+    0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+    70% { box-shadow: 0 0 0 7px rgba(245, 158, 11, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+  }
+
+  .island-text-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .island-tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1.5px 7px;
+    border-radius: 9999px;
+    background: var(--accent-light);
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .dynamic-island-capsule.state-active .island-tag {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+  }
+
+  .dynamic-island-capsule.state-upcoming .island-tag {
+    background: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+  }
+
+  .dynamic-island-capsule.state-done .island-tag {
+    background: rgba(139, 92, 246, 0.15);
+    color: #8b5cf6;
+  }
+
+  .dynamic-island-capsule.state-free .island-tag {
+    background: rgba(148, 163, 184, 0.15);
+    color: #64748b;
+  }
+
+  .island-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .island-room {
+    font-size: 11px;
+    color: var(--text-muted);
+    max-width: 85px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .island-time-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 2px 8px;
+    border-radius: 9999px;
+    white-space: nowrap;
+    font-feature-settings: "tnum";
+    flex-shrink: 0;
+  }
+
+  .dynamic-island-capsule.state-active .island-time-badge {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+  }
+
+  .dynamic-island-capsule.state-upcoming .island-time-badge {
+    background: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+  }
+
+  .island-arrow {
+    color: var(--text-muted);
+    opacity: 0.6;
+    flex-shrink: 0;
+  }
+
+  /* ====== 设置面板美化与日历导出样式 ====== */
+  .settings-divider {
+    margin: 18px 0 10px;
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--text-primary);
+    border-top: 1px dashed var(--border);
+    padding-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .settings-tip {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 12px;
+    background: var(--surface-hover);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--accent);
+  }
+
+
+  @media (max-width: 768px) {
+    #settingsPanel {
+      margin: 10px 12px 20px !important;
+      padding: 18px 14px !important;
+      border-radius: 16px !important;
+    }
+    .setting-row label {
+      width: 82px !important;
+      font-size: 13px !important;
+    }
+  }
+
 </style>
 </head>
 <body data-tab="tt">
@@ -1561,6 +1772,23 @@
       </button>
     </div>
   </header>
+
+  <!-- ClassIsland 灵动岛呼吸倒计时胶囊栏 (点击可直达课程详情/今日日程) -->
+  <div class="dynamic-island-bar" id="dynamicIslandBar" onclick="onIslandClick()">
+    <div class="dynamic-island-capsule state-free" id="dynamicIsland">
+      <div class="island-dot-box">
+        <span class="island-dot dot-free" id="islandDot"></span>
+      </div>
+      <div class="island-text-box">
+        <span class="island-tag" id="islandTag">状态获取中</span>
+        <span class="island-title" id="islandCourse">地大课表中心</span>
+        <span class="island-room" id="islandRoom"></span>
+      </div>
+      <div class="island-time-badge" id="islandTimeBadge">正在加载...</div>
+      <svg class="island-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+  </div>
+
 
   <!-- 桌面端大顶栏（移动端自动隐藏） -->
   <header class="top desktop-only">
@@ -1646,6 +1874,69 @@
         <button class="btn ghost" style="padding:4px 10px;font-size:12px;" onclick="clearBackground()">✕ 清除</button>
       </div>
     </div>
+
+    <!-- 拾光同款外观美化 -->
+    <div class="settings-divider">
+      <span>🎨 课表外观调节（拾光同款）</span>
+    </div>
+
+    <div class="setting-row">
+      <label>格子高度</label>
+      <select id="settingRowHeight" onchange="applyAestheticSettings()">
+        <option value="50px">紧凑 (50px)</option>
+        <option value="58px" selected>适中 (58px · 推荐)</option>
+        <option value="66px">舒适 (66px)</option>
+        <option value="76px">超大 (76px · WakeUp 大卡片)</option>
+      </select>
+    </div>
+
+    <div class="setting-row">
+      <label>卡片圆角</label>
+      <select id="settingCardRadius" onchange="applyAestheticSettings()">
+        <option value="4px">微圆角 (4px)</option>
+        <option value="9px" selected>标准圆角 (9px)</option>
+        <option value="14px">胶囊圆角 (14px)</option>
+        <option value="18px">超大弧度 (18px)</option>
+      </select>
+    </div>
+
+    <div class="setting-row">
+      <label>卡片透明度</label>
+      <select id="settingCardOpacity" onchange="applyAestheticSettings()">
+        <option value="1" selected>100% 纯色质感</option>
+        <option value="0.92">92% 微透光感</option>
+        <option value="0.82">82% 毛玻璃半透</option>
+        <option value="0.70">70% 极透晶体</option>
+      </select>
+    </div>
+
+    <!-- WakeUp 同款系统日历与课前提醒 -->
+    <div class="settings-divider">
+      <span>⏰ 上课提醒与系统日历（WakeUp 同款）</span>
+    </div>
+    <div class="settings-tip">
+      将整学期课程写入手机自带日历（小米/华为/OPPO/vivo/苹果）。即使彻底杀后台，手机和手环手表也会准时震动提醒！
+    </div>
+
+    <div class="setting-row">
+      <label>课前提醒</label>
+      <select id="settingReminderLead" onchange="saveReminderLead(this.value)">
+        <option value="5">提前 5 分钟提醒</option>
+        <option value="10">提前 10 分钟提醒</option>
+        <option value="15" selected>提前 15 分钟提醒（推荐）</option>
+        <option value="20">提前 20 分钟提醒</option>
+        <option value="30">提前 30 分钟提醒</option>
+      </select>
+    </div>
+
+    <div class="setting-row" style="margin-top:6px;">
+      <label>日历同步</label>
+      <button type="button" class="btn primary" onclick="exportToICalendar()" style="flex:1;justify-content:center;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>📅 一键导出至手机系统日历 (.ics)</span>
+      </button>
+    </div>
+
 
     <div style="margin: 18px 0 12px; font-weight: 700; font-size: 14px; color: var(--text-primary); border-top: 1px dashed var(--border); padding-top: 14px;">
       ⏰ 每日大节上课时间
@@ -1882,11 +2173,296 @@ function toggleSettings() {
   }
 }
 
+
+// ============ 拾光同款个性化美化调节 ============
+function applyAestheticSettings() {
+  const rh = document.getElementById('settingRowHeight')?.value || '58px';
+  const radius = document.getElementById('settingCardRadius')?.value || '9px';
+  const opacity = document.getElementById('settingCardOpacity')?.value || '1';
+
+  document.documentElement.style.setProperty('--rh', rh);
+  document.documentElement.style.setProperty('--mobile-rh', rh);
+  document.documentElement.style.setProperty('--course-radius', radius);
+  document.documentElement.style.setProperty('--course-opacity', opacity);
+
+  localStorage.setItem('my_aesthetic_settings', JSON.stringify({ rh, radius, opacity }));
+}
+
+function loadAestheticSettings() {
+  try {
+    const saved = localStorage.getItem('my_aesthetic_settings');
+    if (saved) {
+      const cfg = JSON.parse(saved);
+      if (cfg.rh) {
+        document.documentElement.style.setProperty('--rh', cfg.rh);
+        document.documentElement.style.setProperty('--mobile-rh', cfg.rh);
+        const el = document.getElementById('settingRowHeight');
+        if (el) el.value = cfg.rh;
+      }
+      if (cfg.radius) {
+        document.documentElement.style.setProperty('--course-radius', cfg.radius);
+        const el = document.getElementById('settingCardRadius');
+        if (el) el.value = cfg.radius;
+      }
+      if (cfg.opacity) {
+        document.documentElement.style.setProperty('--course-opacity', cfg.opacity);
+        const el = document.getElementById('settingCardOpacity');
+        if (el) el.value = cfg.opacity;
+      }
+    }
+    const lead = localStorage.getItem('my_reminder_lead');
+    if (lead) {
+      const el = document.getElementById('settingReminderLead');
+      if (el) el.value = lead;
+    }
+  } catch(e) {}
+}
+
+function saveReminderLead(val) {
+  localStorage.setItem('my_reminder_lead', val);
+  showToast(`已设置课前提前 ${val} 分钟提醒`, 'info');
+}
+
+// ============ ClassIsland 灵动岛呼吸胶囊核心驱动 ============
+let currentIslandCourse = null;
+
+function updateDynamicIsland() {
+  const island = document.getElementById('dynamicIsland');
+  if (!island) return;
+
+  const dot = document.getElementById('islandDot');
+  const tag = document.getElementById('islandTag');
+  const title = document.getElementById('islandCourse');
+  const room = document.getElementById('islandRoom');
+  const badge = document.getElementById('islandTimeBadge');
+
+  if (!allCourses || allCourses.length === 0) {
+    island.className = 'dynamic-island-capsule state-free';
+    if (dot) dot.className = 'island-dot dot-free';
+    if (tag) tag.textContent = '课表就绪';
+    if (title) title.textContent = '点击导入课表';
+    if (room) room.textContent = '';
+    if (badge) badge.textContent = '立即同步';
+    currentIslandCourse = null;
+    return;
+  }
+
+  const now = new Date();
+  const curDay = now.getDay() === 0 ? 7 : now.getDay();
+  const curMin = now.getHours() * 60 + now.getMinutes();
+  const curWeek = getCurrentWeek();
+
+  const todayCourses = allCourses
+    .filter(c => +c.xqj === curDay && isWeekInZcd(curWeek, c.zcd))
+    .map(c => {
+      const parts = (c.jcs || c.jc || '1-2').split('-');
+      const startP = +parts[0] || 1;
+      const endP = parts.length > 1 ? +parts[parts.length - 1] : startP;
+      const tStartObj = PERIOD_TIMES.find(x => x.period === startP) || { start: '08:00', end: '08:45' };
+      const tEndObj = PERIOD_TIMES.find(x => x.period === endP) || tStartObj;
+      const sm = toMin(tStartObj.start);
+      const em = toMin(tEndObj.end);
+      return { course: c, startP, endP, tStart: tStartObj.start, tEnd: tEndObj.end, sm, em };
+    })
+    .sort((a, b) => a.sm - b.sm);
+
+  const activeItem = todayCourses.find(item => curMin >= item.sm && curMin <= item.em);
+  const nextItem = todayCourses.find(item => item.sm > curMin);
+
+  if (activeItem) {
+    // 正在上课
+    const { course: c, em } = activeItem;
+    const remainMin = Math.max(1, em - curMin);
+    island.className = 'dynamic-island-capsule state-active';
+    if (dot) dot.className = 'island-dot dot-active';
+    if (tag) tag.textContent = '正在上课';
+    if (title) title.textContent = c.kcmc || '课程进行中';
+    if (room) room.textContent = c.cdmc || '';
+    if (badge) badge.textContent = `还剩 ${remainMin} 分钟下课`;
+    currentIslandCourse = c;
+  } else if (nextItem) {
+    // 下一节即将开始
+    const { course: c, tStart, sm } = nextItem;
+    const diff = sm - curMin;
+    currentIslandCourse = c;
+    if (diff <= 30) {
+      island.className = 'dynamic-island-capsule state-upcoming';
+      if (dot) dot.className = 'island-dot dot-upcoming';
+      if (tag) tag.textContent = '即将上课';
+      if (title) title.textContent = c.kcmc || '下一门课';
+      if (room) room.textContent = c.cdmc || '';
+      if (badge) badge.textContent = `还有 ${diff} 分钟 (${tStart})`;
+    } else {
+      island.className = 'dynamic-island-capsule state-later';
+      if (dot) dot.className = 'island-dot dot-later';
+      if (tag) tag.textContent = '下一节';
+      if (title) title.textContent = c.kcmc || '下一门课';
+      if (room) room.textContent = c.cdmc || '';
+      if (badge) badge.textContent = `${tStart} 开课`;
+    }
+  } else if (todayCourses.length > 0) {
+    // 今日课程已结束
+    island.className = 'dynamic-island-capsule state-done';
+    if (dot) dot.className = 'island-dot dot-done';
+    if (tag) tag.textContent = '今日课毕';
+    if (title) title.textContent = '今天所有课都上完啦';
+    if (room) room.textContent = '';
+    if (badge) badge.textContent = '好好休息 ✨';
+    currentIslandCourse = null;
+  } else {
+    // 今日无课
+    island.className = 'dynamic-island-capsule state-free';
+    if (dot) dot.className = 'island-dot dot-free';
+    if (tag) tag.textContent = '今日无课';
+    if (title) title.textContent = '自由安排时光';
+    if (room) room.textContent = '';
+    if (badge) badge.textContent = '享受充实一天 🏖️';
+    currentIslandCourse = null;
+  }
+}
+
+function onIslandClick() {
+  if (currentIslandCourse) {
+    showCourseDetail(currentIslandCourse);
+  } else {
+    openStatsModal();
+  }
+}
+
+// ============ WakeUp 同款 iCalendar (.ics) 日历导出引擎 ============
+function getAllActiveWeeks(zcdStr) {
+  const weeks = [];
+  for (let w = 1; w <= 25; w++) {
+    if (isWeekInZcd(w, zcdStr)) weeks.push(w);
+  }
+  return weeks;
+}
+
+function getDateForWeekAndDay(w, xqj) {
+  const monday = getSemesterMonday();
+  return new Date(monday.getTime() + ((w - 1) * 7 + (xqj - 1)) * 86400000);
+}
+
+function formatICSDate(date) {
+  const pad = n => String(n).padStart(2, '0');
+  return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}T${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
+}
+
+function escapeICS(str) {
+  if (!str) return '';
+  return str.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+}
+
+function generateICSContent(courses, reminderMinutes = 15) {
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//CUG Schedule//ZH',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'X-WR-CALNAME:地大课程表',
+    'X-WR-TIMEZONE:Asia/Shanghai'
+  ];
+
+  const now = new Date();
+  const dtstamp = formatICSDate(now);
+
+  courses.forEach((c, idx) => {
+    const parts = (c.jcs || c.jc || '1-2').split('-');
+    const startP = +parts[0] || 1;
+    const endP = parts.length > 1 ? +parts[parts.length - 1] : startP;
+    const tStartObj = PERIOD_TIMES.find(x => x.period === startP) || { start: '08:00', end: '08:45' };
+    const tEndObj = PERIOD_TIMES.find(x => x.period === endP) || tStartObj;
+
+    const xqj = +c.xqj || 1;
+    const activeWeeks = getAllActiveWeeks(c.zcd);
+
+    activeWeeks.forEach(w => {
+      const classDate = getDateForWeekAndDay(w, xqj);
+      const [sh, sm] = (tStartObj.start || '08:00').split(':').map(Number);
+      const [eh, em] = (tEndObj.end || '09:35').split(':').map(Number);
+
+      const startDate = new Date(classDate);
+      startDate.setHours(sh, sm, 0, 0);
+
+      const endDate = new Date(classDate);
+      endDate.setHours(eh, em, 0, 0);
+
+      const uid = `cug-${w}-${xqj}-${startP}-${idx}-${startDate.getTime()}@cug.schedule`;
+
+      lines.push(
+        'BEGIN:VEVENT',
+        `UID:${uid}`,
+        `DTSTAMP:${dtstamp}`,
+        `DTSTART:${formatICSDate(startDate)}`,
+        `DTEND:${formatICSDate(endDate)}`,
+        `SUMMARY:${escapeICS(c.kcmc || '课程')}`,
+        `LOCATION:${escapeICS(c.cdmc || '教室待定')}`,
+        `DESCRIPTION:${escapeICS(`任课教师: ${c.xm || '待定'}\\n节次: 第${startP}-${endP}节\\n周次: 第${w}周 (${c.zcd || ''})\\n考核方式: ${c.khfsmc || '考查'}`)}`,
+        'STATUS:CONFIRMED'
+      );
+
+      if (reminderMinutes > 0) {
+        lines.push(
+          'BEGIN:VALARM',
+          `TRIGGER:-PT${reminderMinutes}M`,
+          'ACTION:DISPLAY',
+          `DESCRIPTION:${escapeICS(`上课提醒: ${c.kcmc || '课程'} (${c.cdmc || '教室待定'})`)}`,
+          'END:VALARM'
+        );
+      }
+
+      lines.push('END:VEVENT');
+    });
+  });
+
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n');
+}
+
+function exportToICalendar() {
+  if (!allCourses || allCourses.length === 0) {
+    showToast('当前未找到课表数据，请先导入或联网同步课表！', 'warn');
+    return;
+  }
+  const lead = +document.getElementById('settingReminderLead')?.value || 15;
+  try {
+    const icsContent = generateICSContent(allCourses, lead);
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const fileName = `地大课表_${getSemesterStartDate()}_提前${lead}分钟提醒.ics`;
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    showToast(`🎉 日历文件生成成功！包含提前 ${lead} 分钟闹钟，点击文件即可导入手机系统日历`, 'success', 4500);
+  } catch (err) {
+    console.error('日历导出失败:', err);
+    showToast('导出日历失败：' + (err.message || '未知错误'), 'error');
+  }
+}
+
 function renderSettingsPanel() {
   document.getElementById('settingSemesterStart').value = getSemesterStartDate();
   const { xnm, xqm } = getSemesterConfig();
   document.getElementById('settingXnm').value = xnm;
   document.getElementById('settingXqm').value = xqm;
+  const savedAesthetic = localStorage.getItem('my_aesthetic_settings');
+  if (savedAesthetic) {
+    try {
+      const cfg = JSON.parse(savedAesthetic);
+      if (cfg.rh && document.getElementById('settingRowHeight')) document.getElementById('settingRowHeight').value = cfg.rh;
+      if (cfg.radius && document.getElementById('settingCardRadius')) document.getElementById('settingCardRadius').value = cfg.radius;
+      if (cfg.opacity && document.getElementById('settingCardOpacity')) document.getElementById('settingCardOpacity').value = cfg.opacity;
+    } catch(e) {}
+  }
+  const lead = localStorage.getItem('my_reminder_lead');
+  if (lead && document.getElementById('settingReminderLead')) document.getElementById('settingReminderLead').value = lead;
   renderSettingsRows();
 }
 
@@ -2172,6 +2748,7 @@ function renderCards() {
   if (dc) dc.innerHTML = cardsHtml;
   const mc = document.getElementById('modalCardsContainer');
   if (mc) mc.innerHTML = cardsHtml;
+  updateDynamicIsland();
 }
 
 // ============ 周次导航 ============
@@ -2864,6 +3441,7 @@ function initSwipeGesture() {
 }
 
 window.onload = function() {
+  loadAestheticSettings();
   initSwipeGesture();
   loadBackground();
   initWeekSelector();
