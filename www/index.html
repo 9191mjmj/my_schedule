@@ -1084,8 +1084,8 @@
 
   @media (max-width: 768px) {
     :root {
-      --tc: 34px;
-      --rh: var(--mobile-rh, 58px);
+      --tc: 32px;
+      --rh: var(--mobile-rh, clamp(56px, calc((100dvh - 122px) / 8.5), 76px));
     }
 
     body {
@@ -1112,8 +1112,8 @@
       align-items: center;
       justify-content: space-between;
       height: auto !important;
-      min-height: 52px;
-      padding: calc(env(safe-area-inset-top, 0px) + 14px) 14px 10px 14px !important;
+      min-height: 44px !important;
+      padding: calc(env(safe-area-inset-top, 0px) + 6px) 12px 6px 12px !important;
       background: var(--surface) !important;
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
@@ -1137,7 +1137,7 @@
     }
 
     .mobile-week-title {
-      font-size: 18px !important;
+      font-size: 17px !important;
       font-weight: 800 !important;
       color: var(--text-primary);
       display: flex;
@@ -1147,11 +1147,11 @@
     }
 
     .mobile-date-sub {
-      font-size: 12px !important;
+      font-size: 11px !important;
       color: var(--text-muted);
       font-weight: 500;
-      line-height: 1.2;
-      margin-top: 2px;
+      line-height: 1.15;
+      margin-top: 1px;
     }
 
     .mobile-header-actions {
@@ -1161,32 +1161,23 @@
     }
 
     .m-icon-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-    }
-
-    .m-icon-btn.primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-      width: auto;
-      padding: 0 10px;
-      gap: 4px;
-      font-weight: 600;
-      font-size: 13px;
+      width: 32px !important;
+      height: 32px !important;
+      border-radius: 50% !important;
+      background: transparent !important;
+      border: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.08)) !important;
+      color: var(--text-secondary) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      box-shadow: none !important;
+      padding: 0 !important;
     }
 
     .m-icon-btn:active {
-      transform: scale(0.92);
+      transform: scale(0.9) !important;
+      background: var(--surface-hover) !important;
     }
 
     /* 移动端 ViewPager 纯净全宽容器（支持 1:1 跟手滑动） */
@@ -1215,7 +1206,7 @@
       box-shadow: none !important;
       background: transparent !important;
       display: grid !important;
-      grid-template-columns: var(--tc) repeat(7, minmax(0, 1fr)) !important;
+      grid-template-columns: var(--tc) repeat(var(--day-cols, 7), minmax(0, 1fr)) !important;
       box-sizing: border-box !important;
     }
 
@@ -1316,10 +1307,24 @@
       font-weight: 800 !important;
     }
 
+    .header.today .day-name {
+      color: var(--text-primary) !important;
+      font-weight: 800 !important;
+    }
+
     .header.today .day-date {
-      background: var(--accent) !important;
+      background: #1e293b !important;
       color: #ffffff !important;
-      box-shadow: 0 2px 6px var(--accent-glow, rgba(37, 99, 235, 0.25)) !important;
+      border-radius: 6px !important;
+      padding: 0 4px !important;
+      font-weight: 800 !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18) !important;
+    }
+
+    [data-theme="dark"] .header.today .day-date {
+      background: #38bdf8 !important;
+      color: #0f172a !important;
+      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3) !important;
     }
 
     /* 左侧时间轴：告别线框，纯净现代排印 */
@@ -1379,56 +1384,69 @@
     /* 课程卡片视觉重磅升级（吸收 WakeUp 充裕高度 + 原创微磨砂胶囊层级） */
     .course {
       margin: 2px 2px !important;
-      padding: 7px 4.5px !important;
-      border-radius: var(--course-radius, 9px) !important;
-      border: none !important;
-      box-shadow: 0 1px 4px var(--shadow-c, rgba(0,0,0,0.06)) !important;
+      padding: 5px 3.5px !important;
+      border-radius: var(--course-radius, 10px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.5) !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
       display: flex !important;
       flex-direction: column !important;
       justify-content: flex-start !important;
+      align-items: center !important;
       overflow: hidden !important;
       animation: none !important;
       opacity: var(--course-opacity, 1) !important;
+      transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.12s ease !important;
+      cursor: pointer;
+    }
+
+    .course:active {
+      transform: scale(0.94) !important;
+      filter: brightness(0.96) !important;
     }
 
     .course-name {
       display: block !important;
       -webkit-line-clamp: unset !important;
       max-height: none !important;
-      font-size: 11.5px !important;
+      font-size: 11px !important;
       font-weight: 700 !important;
-      line-height: 1.25 !important;
+      line-height: 1.22 !important;
+      letter-spacing: -0.25px !important;
       word-break: break-all !important;
       white-space: normal !important;
       color: #ffffff !important;
-      margin-bottom: 3px !important;
-      text-align: center;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
+      margin-bottom: 2px !important;
+      text-align: center !important;
     }
 
     .course-room {
       font-size: 9.5px !important;
-      font-weight: 600 !important;
-      line-height: 1.22 !important;
+      font-weight: 500 !important;
+      line-height: 1.18 !important;
+      letter-spacing: -0.2px !important;
       word-break: break-all !important;
       white-space: normal !important;
-      color: #ffffff !important;
-      background: rgba(0, 0, 0, 0.14) !important;
-      padding: 2.5px 2px !important;
-      border-radius: 5px !important;
+      color: rgba(255, 255, 255, 0.95) !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12) !important;
+      background: none !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
       margin-top: auto !important;
-      margin-bottom: 2px !important;
-      text-align: center;
+      margin-bottom: 1.5px !important;
+      text-align: center !important;
     }
 
     .course-teacher {
-      font-size: 9px !important;
+      font-size: 8.5px !important;
       opacity: 0.9 !important;
-      line-height: 1.15 !important;
+      line-height: 1.1 !important;
       word-break: break-all !important;
       white-space: normal !important;
-      color: #ffffff !important;
-      text-align: center;
-      margin-top: 1px !important;
+      color: rgba(255, 255, 255, 0.85) !important;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1) !important;
+      text-align: center !important;
+      margin-top: 0 !important;
     }
 
     .detail-grid { grid-template-columns: 1fr !important; }
@@ -1508,7 +1526,7 @@
   .course-room {
     font-size: 10px;
     opacity: 0.95;
-    background: rgba(0, 0, 0, 0.18);
+    background: none;
     padding: 1px 5px;
     border-radius: 4px;
     white-space: nowrap;
@@ -1537,7 +1555,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 6px 14px 8px 14px;
+    padding: 2px 10px 4px 10px !important;
     background: transparent;
     cursor: pointer;
     user-select: none;
@@ -1552,9 +1570,9 @@
   .dynamic-island-capsule {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px !important;
     max-width: 100%;
-    padding: 5px 14px 5px 10px;
+    padding: 3px 10px !important;
     background: var(--surface);
     backdrop-filter: blur(20px);
     border: 1px solid var(--border);
@@ -1755,18 +1773,19 @@
   }
 
   .course-room {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    background: rgba(0, 0, 0, 0.18) !important;
-    backdrop-filter: blur(6px) !important;
-    padding: 2px 4px !important;
-    border-radius: 6px !important;
+    display: block !important;
+    text-align: center !important;
+    background: none !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    border: none !important;
     font-size: 9.5px !important;
-    font-weight: 600 !important;
+    font-weight: 500 !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12) !important;
     margin-top: auto !important;
-    border: 0.5px solid rgba(255, 255, 255, 0.15) !important;
+    line-height: 1.2 !important;
+    word-break: break-all !important;
   }
 
   .course-ghost {
@@ -1844,9 +1863,8 @@
       <div class="mobile-date-sub" id="mDateSub">10月22日 周四</div>
     </div>
     <div class="mobile-header-actions">
-      <button class="m-icon-btn primary" onclick="importSchedule()" title="导入课表">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <span>导课</span>
+      <button class="m-icon-btn" onclick="importSchedule()" title="导入课表（教务同步）">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       </button>
       <button class="m-icon-btn" onclick="openStatsModal()" title="今日概览与统计">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
@@ -1970,10 +1988,9 @@
     <div class="setting-row">
       <label>格子高度</label>
       <select id="settingRowHeight" onchange="applyAestheticSettings()">
-        <option value="50px">紧凑 (50px)</option>
-        <option value="58px" selected>适中 (58px · 推荐)</option>
-        <option value="66px">舒适 (66px)</option>
-        <option value="76px">超大 (76px · WakeUp 大卡片)</option>
+        <option value="clamp(56px, calc((100dvh - 122px) / 8.5), 76px)" selected>黄金比例 (白天8节 + 晚课第9节半露 · 推荐)</option>
+        <option value="52px">全天直达 (52px · 紧凑)</option>
+        <option value="74px">宽大沉浸 (74px · WakeUp大卡片)</option>
       </select>
     </div>
 
@@ -2154,19 +2171,20 @@ let allCourses = [];
 let cookiePollTimer = null;
 
 // 12 款纯平莫兰迪/马卡龙高级色板（纯净透气，高对比度防撞色，完全消除刺眼光晕）
+// 12 款纯平莫兰迪高级色板（低饱和度，温润艺术质感，与纯白字+微白贴纸描边完美融合）
 const HIGH_CONTRAST_PALETTES = [
-  { bg: '#f87171', shadow: 'rgba(248, 113, 113, 0.28)', solid: '#f87171', name: '珊瑚粉' },
-  { bg: '#38bdf8', shadow: 'rgba(56, 189, 248, 0.28)', solid: '#38bdf8', name: '晴空蓝' },
-  { bg: '#34d399', shadow: 'rgba(52, 211, 153, 0.28)', solid: '#34d399', name: '薄荷绿' },
-  { bg: '#a78bfa', shadow: 'rgba(167, 139, 250, 0.28)', solid: '#a78bfa', name: '丁香紫' },
-  { bg: '#fb923c', shadow: 'rgba(251, 146, 60, 0.28)', solid: '#fb923c', name: '暖杏橙' },
-  { bg: '#f43f5e', shadow: 'rgba(244, 63, 94, 0.28)', solid: '#f43f5e', name: '山茶红' },
-  { bg: '#2dd4bf', shadow: 'rgba(45, 212, 191, 0.28)', solid: '#2dd4bf', name: '碧湖青' },
-  { bg: '#6366f1', shadow: 'rgba(99, 102, 241, 0.28)', solid: '#6366f1', name: '湛靛蓝' },
-  { bg: '#f59e0b', shadow: 'rgba(245, 158, 11, 0.28)', solid: '#f59e0b', name: '琥珀金' },
-  { bg: '#ec4899', shadow: 'rgba(236, 72, 153, 0.28)', solid: '#ec4899', name: '蔷薇粉' },
-  { bg: '#10b981', shadow: 'rgba(16, 185, 129, 0.28)', solid: '#10b981', name: '翡翠绿' },
-  { bg: '#8b5cf6', shadow: 'rgba(139, 92, 246, 0.28)', solid: '#8b5cf6', name: '紫晶紫' }
+  { bg: '#f298a6', shadow: 'rgba(242, 152, 166, 0.28)', solid: '#f298a6', name: '茱萸粉' },
+  { bg: '#50b8b2', shadow: 'rgba(80, 184, 178, 0.28)', solid: '#50b8b2', name: '海沫青' },
+  { bg: '#53a3df', shadow: 'rgba(83, 163, 223, 0.28)', solid: '#53a3df', name: '晴空蓝' },
+  { bg: '#9a8ce2', shadow: 'rgba(154, 140, 226, 0.28)', solid: '#9a8ce2', name: '香芋紫' },
+  { bg: '#e69958', shadow: 'rgba(230, 153, 88, 0.28)', solid: '#e69958', name: '暖驼橙' },
+  { bg: '#ee8379', shadow: 'rgba(238, 131, 121, 0.28)', solid: '#ee8379', name: '珊瑚粉' },
+  { bg: '#61be95', shadow: 'rgba(97, 190, 149, 0.28)', solid: '#61be95', name: '鼠尾草绿' },
+  { bg: '#6696c2', shadow: 'rgba(102, 150, 194, 0.28)', solid: '#6696c2', name: '雾霾蓝' },
+  { bg: '#d89f4b', shadow: 'rgba(216, 159, 75, 0.28)', solid: '#d89f4b', name: '芥末金' },
+  { bg: '#af83df', shadow: 'rgba(175, 131, 223, 0.28)', solid: '#af83df', name: '浅紫罗兰' },
+  { bg: '#76b772', shadow: 'rgba(118, 183, 114, 0.28)', solid: '#76b772', name: '抹茶绿' },
+  { bg: '#4aaebf', shadow: 'rgba(74, 174, 191, 0.28)', solid: '#4aaebf', name: '琉璃青' }
 ];
 
 const courseColorCache = new Map();
@@ -2988,7 +3006,7 @@ function renderWeekGrid(grid, w) {
 
   // 动态设置当前网格列数，让工作日课表瞬间变宽
   grid.style.setProperty('--day-cols', displayDays);
-  grid.style.gridTemplateColumns = `var(--tc) repeat(${displayDays}, minmax(0, 1fr))`;
+  grid.style.setProperty('grid-template-columns', `var(--tc) repeat(${displayDays}, minmax(0, 1fr))`, 'important');
 
   // 从当前周提取月份与日期，构建极简高效表头
   const firstDate = dates[0] || '10/19';
@@ -3439,35 +3457,58 @@ function initSwipeGesture() {
   if (!viewport || !track || viewport._swipeInitialized) return;
   viewport._swipeInitialized = true;
 
-  let startX = 0, startY = 0, startTime = 0;
+  let startX = 0, startY = 0;
   let isDragging = false;
   let isHorizontal = null;
   let isAnimating = false;
+  let currentTranslateX = 0;
+  let rafId = null;
+  let touchHistory = [];
 
   const resetTrackPosition = () => {
     track.style.transition = 'none';
     track.style.transform = 'translate3d(-33.333333%, 0, 0)';
+    currentTranslateX = 0;
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
   };
 
   const onStart = (clientX, clientY) => {
     if (isAnimating) return;
     startX = clientX;
     startY = clientY;
-    startTime = Date.now();
     isDragging = false;
     isHorizontal = null;
+    currentTranslateX = 0;
+    touchHistory = [{ x: clientX, y: clientY, time: performance.now() }];
     window._isSwipingSchedule = false;
     track.style.transition = 'none';
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
   };
 
   const onMove = (clientX, clientY, e) => {
     if (isAnimating) return;
     const dx = clientX - startX;
     const dy = clientY - startY;
+    const now = performance.now();
+
+    touchHistory.push({ x: clientX, y: clientY, time: now });
+    // 精确保留近 100ms 速度窗口
+    while (touchHistory.length > 1 && (now - touchHistory[0].time > 100)) {
+      touchHistory.shift();
+    }
 
     if (isHorizontal === null) {
-      if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
-        if (Math.abs(dx) >= Math.abs(dy)) {
+      const absX = Math.abs(dx);
+      const absY = Math.abs(dy);
+      // 智能倾角检测：横向偏角 > 38度时才接管切周，纵向滑课表绝对零干扰
+      if (absX > 8 || absY > 8) {
+        if (absX > absY * 1.25) {
           isHorizontal = true;
           isDragging = true;
           window._isSwipingSchedule = true;
@@ -3481,66 +3522,112 @@ function initSwipeGesture() {
       if (e && e.cancelable) e.preventDefault();
 
       const curW = +document.getElementById('weekSelector').value || getCurrentWeek();
+      const containerW = viewport.offsetWidth || window.innerWidth;
       let effectiveDx = dx;
-      // 边界弹性阻尼
+
+      // Apple UIScrollView 经典非线性橡皮筋弹性阻尼（告别生硬死锁）
       if ((curW <= 1 && dx > 0) || (curW >= 25 && dx < 0)) {
-        effectiveDx = dx * 0.32;
+        const sign = dx < 0 ? -1 : 1;
+        const abs = Math.abs(dx);
+        const cVal = 0.55;
+        effectiveDx = sign * ((1 - (1 / ((abs * cVal / containerW) + 1))) * containerW);
       }
 
-      // 实时跟随手指位移：1:1 响应！
-      track.style.transform = `translate3d(calc(-33.333333% + ${effectiveDx}px), 0, 0)`;
+      currentTranslateX = effectiveDx;
+
+      // RAF 120Hz 刷新率解耦渲染，彻底消灭触控跟手抖动
+      if (!rafId) {
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+          track.style.transform = `translate3d(calc(-33.333333% + ${currentTranslateX}px), 0, 0)`;
+        });
+      }
     }
   };
 
-  const onEnd = (clientX, clientY) => {
+  const onEnd = () => {
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+
     if (isAnimating || !isDragging) {
       setTimeout(() => { window._isSwipingSchedule = false; }, 60);
       return;
     }
-    const dx = clientX - startX;
-    const dt = Date.now() - startTime;
-    const vx = dx / Math.max(1, dt);
+
     const containerW = viewport.offsetWidth || window.innerWidth;
     const curW = +document.getElementById('weekSelector').value || getCurrentWeek();
 
-    // 判定翻页阈值：位移超 20% 宽度，或快速滑动轻弹
-    const isNext = (curW < 25) && (dx < -containerW * 0.2 || (dx < -30 && vx < -0.25));
-    const isPrev = (curW > 1) && (dx > containerW * 0.2 || (dx > 30 && vx > 0.25));
+    // 从最近采样窗口精确提取松手瞬时速度 (px/ms)
+    let vx = 0;
+    if (touchHistory.length >= 2) {
+      const first = touchHistory[0];
+      const last = touchHistory[touchHistory.length - 1];
+      const dt = Math.max(10, last.time - first.time);
+      vx = (last.x - first.x) / dt;
+    }
+
+    const dx = currentTranslateX;
+
+    // 自适应判定：位移超 20% 容器宽，或快速微拂轻弹 (vx > 0.3px/ms)
+    const isNext = (curW < 25) && (dx < -containerW * 0.2 || (dx < -25 && vx < -0.3));
+    const isPrev = (curW > 1) && (dx > containerW * 0.2 || (dx > 25 && vx > 0.3));
 
     if (isNext) {
       isAnimating = true;
-      track.style.transition = 'transform 0.26s cubic-bezier(0.2, 0.95, 0.4, 1)';
+      if (window.navigator?.vibrate) window.navigator.vibrate(8); // 原生级微触感
+      const duration = Math.max(180, Math.min(280, Math.round(280 - Math.abs(vx) * 60)));
+      track.style.transition = `transform ${duration}ms cubic-bezier(0.16, 1, 0.3, 1)`;
       track.style.transform = 'translate3d(-66.666666%, 0, 0)';
 
-      setTimeout(() => {
+      let completed = false;
+      const onDone = () => {
+        if (completed) return;
+        completed = true;
+        track.removeEventListener('transitionend', onDone);
         setWeekImmediate(curW + 1);
         resetTrackPosition();
         isAnimating = false;
-        setTimeout(() => { window._isSwipingSchedule = false; }, 60);
-      }, 260);
+        setTimeout(() => { window._isSwipingSchedule = false; }, 40);
+      };
+      track.addEventListener('transitionend', onDone, { once: true });
+      setTimeout(onDone, duration + 50);
+
     } else if (isPrev) {
       isAnimating = true;
-      track.style.transition = 'transform 0.26s cubic-bezier(0.2, 0.95, 0.4, 1)';
+      if (window.navigator?.vibrate) window.navigator.vibrate(8);
+      const duration = Math.max(180, Math.min(280, Math.round(280 - Math.abs(vx) * 60)));
+      track.style.transition = `transform ${duration}ms cubic-bezier(0.16, 1, 0.3, 1)`;
       track.style.transform = 'translate3d(0%, 0, 0)';
 
-      setTimeout(() => {
+      let completed = false;
+      const onDone = () => {
+        if (completed) return;
+        completed = true;
+        track.removeEventListener('transitionend', onDone);
         setWeekImmediate(curW - 1);
         resetTrackPosition();
         isAnimating = false;
-        setTimeout(() => { window._isSwipingSchedule = false; }, 60);
-      }, 260);
+        setTimeout(() => { window._isSwipingSchedule = false; }, 40);
+      };
+      track.addEventListener('transitionend', onDone, { once: true });
+      setTimeout(onDone, duration + 50);
+
     } else {
-      // 未达阈值回弹归位
-      track.style.transition = 'transform 0.22s cubic-bezier(0.2, 0.95, 0.4, 1)';
+      // 未达阈值平滑春季回弹归位
+      isAnimating = true;
+      track.style.transition = 'transform 240ms cubic-bezier(0.25, 1, 0.5, 1)';
       track.style.transform = 'translate3d(-33.333333%, 0, 0)';
       setTimeout(() => {
-        resetTrackPosition();
+        track.style.transition = 'none';
+        isAnimating = false;
         window._isSwipingSchedule = false;
-      }, 220);
+      }, 240);
     }
   };
 
-  // 手机端原生触摸事件
+  // 移动端原生 Touch 事件绑定
   viewport.addEventListener('touchstart', (e) => {
     if (e.touches.length !== 1) return;
     onStart(e.touches[0].clientX, e.touches[0].clientY);
@@ -3552,15 +3639,16 @@ function initSwipeGesture() {
   }, { passive: false });
 
   viewport.addEventListener('touchend', (e) => {
-    onEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    onEnd();
   }, { passive: true });
 
   viewport.addEventListener('touchcancel', () => {
     resetTrackPosition();
     window._isSwipingSchedule = false;
+    isAnimating = false;
   }, { passive: true });
 
-  // 电脑端鼠标拖拽 1:1 跟随
+  // 桌面端鼠标 1:1 跟手模拟
   let isMouseDown = false;
   viewport.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
@@ -3571,10 +3659,10 @@ function initSwipeGesture() {
     if (!isMouseDown) return;
     onMove(e.clientX, e.clientY, e);
   });
-  window.addEventListener('mouseup', (e) => {
+  window.addEventListener('mouseup', () => {
     if (!isMouseDown) return;
     isMouseDown = false;
-    onEnd(e.clientX, e.clientY);
+    onEnd();
   });
 
   // 键盘左右箭头切周
