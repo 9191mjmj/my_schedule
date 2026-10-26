@@ -1085,7 +1085,7 @@
   @media (max-width: 768px) {
     :root {
       --tc: 32px;
-      --rh: var(--mobile-rh, clamp(56px, calc((100dvh - 122px) / 8.5), 76px));
+      --rh: var(--mobile-rh, calc((100dvh - env(safe-area-inset-top, 0px) - 176px) / 8.5));
     }
 
     body {
@@ -1276,73 +1276,89 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 2px;
+      justify-content: center;
+      gap: 1px;
+      padding: 3px 2px;
+      border-radius: 10px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .day-name {
-      font-size: 11.5px;
-      font-weight: 600;
+      font-size: 10px;
+      font-weight: 500;
       color: var(--text-muted);
+      line-height: 1.1;
+      letter-spacing: -0.2px;
     }
 
     .day-date {
-      font-size: 12.5px;
+      font-size: 13px;
       font-weight: 700;
       color: var(--text-secondary);
-      min-width: 22px;
-      height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 6px;
+      line-height: 1.1;
+      margin-top: 1px;
     }
 
-    /* 今天的高亮胶囊指示（借鉴 WakeUp 极简聚焦徽章） */
+    /* 今天的一体化高亮胶囊（周一与日期合一，消除减号尴尬） */
     .header.today {
       background: transparent !important;
     }
 
-    .header.today .day-name {
-      color: var(--accent) !important;
-      font-weight: 800 !important;
+    .header.today .day-col-header {
+      background: rgba(56, 189, 248, 0.16) !important;
+      border: 1px solid rgba(56, 189, 248, 0.65) !important;
+      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.22) !important;
     }
 
     .header.today .day-name {
-      color: var(--text-primary) !important;
-      font-weight: 800 !important;
+      color: #38bdf8 !important;
+      font-weight: 700 !important;
     }
 
     .header.today .day-date {
-      background: #1e293b !important;
       color: #ffffff !important;
-      border-radius: 6px !important;
-      padding: 0 4px !important;
       font-weight: 800 !important;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18) !important;
+      background: transparent !important;
+      box-shadow: none !important;
     }
 
-    [data-theme="dark"] .header.today .day-date {
-      background: #38bdf8 !important;
-      color: #0f172a !important;
-      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3) !important;
+    [data-theme="light"] .header.today .day-col-header {
+      background: rgba(37, 99, 235, 0.1) !important;
+      border: 1px solid rgba(37, 99, 235, 0.5) !important;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15) !important;
     }
 
-    /* 左侧时间轴：告别线框，纯净现代排印 */
+    [data-theme="light"] .header.today .day-name {
+      color: #2563eb !important;
+      font-weight: 700 !important;
+    }
+
+    [data-theme="light"] .header.today .day-date {
+      color: #1e293b !important;
+      font-weight: 800 !important;
+      background: transparent !important;
+    }
+
+    /* 左侧时间轴：高清数字 + 横向贯穿对齐虚线 */
     .period {
       padding: 4px 1px !important;
       background: transparent !important;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      border: none !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.05) !important;
+      box-sizing: border-box !important;
     }
 
     .period b {
-      font-size: 13px !important;
-      font-weight: 700 !important;
-      color: var(--text-secondary) !important;
-      line-height: 1.1 !important;
+      font-size: 13.5px !important;
+      font-weight: 800 !important;
+      color: var(--text-primary) !important;
+      line-height: 1 !important;
+      opacity: 0.95 !important;
     }
 
     .period .time {
@@ -1351,6 +1367,7 @@
       margin-top: 2px !important;
       line-height: 1.15 !important;
       text-align: center;
+      opacity: 0.8 !important;
       font-feature-settings: 'tnum';
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     }
@@ -1370,11 +1387,18 @@
       font-weight: 700 !important;
     }
 
-    /* 消除所有单元格虚线与多余底色（全面拥抱无界画布） */
+    /* 课表优雅发丝辅助对齐虚线 */
     .cell {
       min-height: var(--rh) !important;
-      border: none !important;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.05) !important;
+      border-right: none !important;
       background: transparent !important;
+      box-sizing: border-box !important;
+    }
+
+    [data-theme="light"] .period,
+    [data-theme="light"] .cell {
+      border-bottom: 1px dashed rgba(0, 0, 0, 0.05) !important;
     }
 
     .cell.tod {
@@ -1386,17 +1410,19 @@
       margin: 2px 2px !important;
       padding: 5px 3.5px !important;
       border-radius: var(--course-radius, 10px) !important;
-      border: 1px solid rgba(255, 255, 255, 0.5) !important;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+      border: 1px solid rgba(255, 255, 255, 0.22) !important;
+      box-shadow: 0 3px 10px var(--shadow-c, rgba(0, 0, 0, 0.2)), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
       display: flex !important;
       flex-direction: column !important;
-      justify-content: flex-start !important;
+      justify-content: center !important; /* 精致居中，消灭腹部大黑洞 */
       align-items: center !important;
+      gap: 2.5px !important;
       overflow: hidden !important;
       animation: none !important;
       opacity: var(--course-opacity, 1) !important;
       transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.12s ease !important;
       cursor: pointer;
+      box-sizing: border-box !important;
     }
 
     .course:active {
@@ -1410,41 +1436,41 @@
       max-height: none !important;
       font-size: 11px !important;
       font-weight: 700 !important;
-      line-height: 1.22 !important;
-      letter-spacing: -0.25px !important;
-      word-break: break-all !important;
-      white-space: normal !important;
+      line-height: 1.25 !important;
+      letter-spacing: -0.2px !important;
+      word-break: normal !important;
+      overflow-wrap: break-word !important;
+      text-wrap: balance !important;
       color: #ffffff !important;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
-      margin-bottom: 2px !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+      margin-bottom: 0 !important;
       text-align: center !important;
     }
 
     .course-room {
       font-size: 9.5px !important;
       font-weight: 500 !important;
-      line-height: 1.18 !important;
+      line-height: 1.2 !important;
       letter-spacing: -0.2px !important;
-      word-break: break-all !important;
-      white-space: normal !important;
+      word-break: normal !important;
+      overflow-wrap: break-word !important;
+      text-wrap: balance !important;
       color: rgba(255, 255, 255, 0.95) !important;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12) !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
       background: none !important;
       padding: 0 !important;
       border-radius: 0 !important;
-      margin-top: auto !important;
-      margin-bottom: 1.5px !important;
+      margin-top: 1px !important;
+      margin-bottom: 0 !important;
       text-align: center !important;
     }
 
     .course-teacher {
       font-size: 8.5px !important;
       opacity: 0.9 !important;
-      line-height: 1.1 !important;
-      word-break: break-all !important;
-      white-space: normal !important;
+      line-height: 1.15 !important;
       color: rgba(255, 255, 255, 0.85) !important;
-      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1) !important;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12) !important;
       text-align: center !important;
       margin-top: 0 !important;
     }
@@ -1782,10 +1808,13 @@
     font-size: 9.5px !important;
     font-weight: 500 !important;
     color: rgba(255, 255, 255, 0.95) !important;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12) !important;
-    margin-top: auto !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
+    margin-top: 1px !important;
+    margin-bottom: 0 !important;
     line-height: 1.2 !important;
-    word-break: break-all !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    text-wrap: balance !important;
   }
 
   .course-ghost {
@@ -1988,7 +2017,7 @@
     <div class="setting-row">
       <label>格子高度</label>
       <select id="settingRowHeight" onchange="applyAestheticSettings()">
-        <option value="clamp(56px, calc((100dvh - 122px) / 8.5), 76px)" selected>黄金比例 (白天8节 + 晚课第9节半露 · 推荐)</option>
+        <option value="calc((100dvh - env(safe-area-inset-top, 0px) - 176px) / 8.5)" selected>黄金比例 (白天8节 + 晚课第9节半露 · 推荐)</option>
         <option value="52px">全天直达 (52px · 紧凑)</option>
         <option value="74px">宽大沉浸 (74px · WakeUp大卡片)</option>
       </select>
@@ -2319,6 +2348,10 @@ function loadAestheticSettings() {
     const saved = localStorage.getItem('my_aesthetic_settings');
     if (saved) {
       const cfg = JSON.parse(saved);
+      if (cfg.rh && (cfg.rh.includes('122px') || cfg.rh.includes('clamp(56px'))) {
+        cfg.rh = 'calc((100dvh - env(safe-area-inset-top, 0px) - 176px) / 8.5)';
+        localStorage.setItem('my_aesthetic_settings', JSON.stringify(cfg));
+      }
       if (cfg.rh) {
         document.documentElement.style.setProperty('--rh', cfg.rh);
         document.documentElement.style.setProperty('--mobile-rh', cfg.rh);
@@ -2962,7 +2995,37 @@ function filterAndRender() {
 }
 
 // 同时预加载并渲染三页（前一周、当前周、后一周）实现无缝跟手
+
+// 移动端真机像素级 8.5 节黄金比例自动测算（白天8节全屏沉浸 + 晚9节精准露出50%）
+function updateGoldenRowHeight() {
+  if (window.innerWidth > 768) return;
+  try {
+    const settingRh = localStorage.getItem('my_aesthetic_settings');
+    if (settingRh) {
+      const cfg = JSON.parse(settingRh);
+      if (cfg.rh && cfg.rh.endsWith('px')) {
+        document.documentElement.style.setProperty('--mobile-rh', cfg.rh);
+        return;
+      }
+    }
+  } catch(e) {}
+
+  const viewport = document.getElementById('scheduleViewport');
+  if (!viewport) return;
+  const firstHeader = document.querySelector('.header');
+  const headerH = firstHeader ? firstHeader.offsetHeight : 44;
+  const gridTop = viewport.getBoundingClientRect().top + headerH;
+  const availH = window.innerHeight - gridTop;
+  if (availH > 240) {
+    const rh = Math.floor(availH / 8.5);
+    document.documentElement.style.setProperty('--mobile-rh', rh + 'px');
+  }
+}
+window.addEventListener('resize', updateGoldenRowHeight);
+window.addEventListener('orientationchange', updateGoldenRowHeight);
+
 function renderAllViewPagerPages(centerW) {
+  updateGoldenRowHeight();
   const gCurr = document.getElementById('schedule');
   const gPrev = document.getElementById('schedulePrev');
   const gNext = document.getElementById('scheduleNext');
@@ -2979,6 +3042,28 @@ function renderAllViewPagerPages(centerW) {
   } else if (gNext) {
     gNext.innerHTML = '';
   }
+}
+
+
+function formatCourseTitleSmart(name) {
+  if (!name) return '';
+  let s = name;
+  s = s.replace(/(羽毛球|乒乓球|网球|足球|篮球|排球|健美操|太极拳)(初级班|中级班|高级班)/g, '$1<wbr>$2');
+  s = s.replace(/(遥感原理)(与应用)/g, '$1<wbr>$2');
+  s = s.replace(/(数字地形)(测量学[A-Z]?)/g, '$1<wbr>$2');
+  s = s.replace(/(概率论)(与数理统计[A-Z]?)/g, '$1<wbr>$2');
+  s = s.replace(/(大学英语)(\d+)/g, '$1<wbr>$2');
+  s = s.replace(/(面向对象)(程序设计[A-Z]?)/g, '$1<wbr>$2');
+  return s;
+}
+
+function formatRoomSmart(room) {
+  if (!room) return '';
+  let r = room;
+  if (!r.startsWith('@')) r = '@' + r;
+  r = r.replace(/(@未来城校区|@未来城)(.+)/g, '$1<wbr>$2');
+  r = r.replace(/(@公教\d)-(\d+)/g, '$1<wbr>-$2');
+  return r;
 }
 
 function renderWeekGrid(grid, w) {
@@ -3011,7 +3096,7 @@ function renderWeekGrid(grid, w) {
   // 从当前周提取月份与日期，构建极简高效表头
   const firstDate = dates[0] || '10/19';
   const curMonth = firstDate.split('/')[0] || (now.getMonth() + 1);
-  const weekDayNames = ['一', '二', '三', '四', '五', '六', '日'];
+  const weekDayNames = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 
   for (let i = 0; i <= displayDays; i++) {
     const el = document.createElement('div');
@@ -3146,8 +3231,8 @@ function renderWeekGrid(grid, w) {
       el.innerHTML = `
         ${isNow ? '<div class="live-course-badge"><span class="badge-dot"></span>上课中</div>' : ''}
         ${isGhost ? `<span class="course-ghost-tag">非本周 · ${c.zcd || ''}</span>` : ''}
-        <div class="course-name">${c.kcmc}</div>
-        ${roomText ? `<div class="course-room">${roomText}</div>` : ''}
+        <div class="course-name">${formatCourseTitleSmart(c.kcmc)}</div>
+        ${roomText ? `<div class="course-room">${formatRoomSmart(roomText)}</div>` : ''}
         ${c.xm && !isGhost ? `<div class="course-teacher">${c.xm}</div>` : ''}
       `;
       grid.appendChild(el);
