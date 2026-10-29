@@ -1084,7 +1084,7 @@
 
   @media (max-width: 768px) {
     :root {
-      --tc: 32px;
+      --tc: 28px;
       --rh: var(--mobile-rh, calc((100dvh - env(safe-area-inset-top, 0px) - 176px) / 8.5));
     }
 
@@ -1294,11 +1294,18 @@
     }
 
     .day-date {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--text-secondary);
       line-height: 1.1;
       margin-top: 1px;
+    }
+
+    .day-col-header.is-weekend .day-name {
+      opacity: 0.7;
+    }
+    .day-col-header.is-weekend .day-date {
+      opacity: 0.8;
     }
 
     /* 今天的一体化高亮胶囊（周一与日期合一，消除减号尴尬） */
@@ -1407,16 +1414,16 @@
 
     /* 课程卡片视觉重磅升级（吸收 WakeUp 充裕高度 + 原创微磨砂胶囊层级） */
     .course {
-      margin: 2px 2px !important;
-      padding: 5px 3.5px !important;
-      border-radius: var(--course-radius, 10px) !important;
+      margin: 2px 1px !important;
+      padding: 4px 1.5px !important;
+      border-radius: var(--course-radius, 9px) !important;
       border: 1px solid rgba(255, 255, 255, 0.22) !important;
       box-shadow: 0 3px 10px var(--shadow-c, rgba(0, 0, 0, 0.2)), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
       display: flex !important;
       flex-direction: column !important;
       justify-content: center !important; /* 精致居中，消灭腹部大黑洞 */
       align-items: center !important;
-      gap: 2.5px !important;
+      gap: 2px !important;
       overflow: hidden !important;
       animation: none !important;
       opacity: var(--course-opacity, 1) !important;
@@ -1434,9 +1441,9 @@
       display: block !important;
       -webkit-line-clamp: unset !important;
       max-height: none !important;
-      font-size: 11px !important;
+      font-size: 10px !important;
       font-weight: 700 !important;
-      line-height: 1.25 !important;
+      line-height: 1.22 !important;
       letter-spacing: -0.2px !important;
       word-break: normal !important;
       overflow-wrap: break-word !important;
@@ -1448,9 +1455,9 @@
     }
 
     .course-room {
-      font-size: 9.5px !important;
+      font-size: 8.5px !important;
       font-weight: 500 !important;
-      line-height: 1.2 !important;
+      line-height: 1.15 !important;
       letter-spacing: -0.2px !important;
       word-break: normal !important;
       overflow-wrap: break-word !important;
@@ -2015,6 +2022,15 @@
     </div>
 
     <div class="setting-row">
+      <label>一周展示</label>
+      <select id="settingWeekendMode" onchange="setWeekendMode(this.value)">
+        <option value="7" selected>完整 7 天 (周一至周日 · 推荐)</option>
+        <option value="auto">智能折叠 (周末无课时收拢为5天)</option>
+        <option value="5">固定 5 天 (仅工作日)</option>
+      </select>
+    </div>
+
+    <div class="setting-row">
       <label>格子高度</label>
       <select id="settingRowHeight" onchange="applyAestheticSettings()">
         <option value="calc((100dvh - env(safe-area-inset-top, 0px) - 176px) / 8.5)" selected>黄金比例 (白天8节 + 晚课第9节半露 · 推荐)</option>
@@ -2310,13 +2326,20 @@ function toggleSettings() {
 
 
 function getWeekendMode() {
-  return localStorage.getItem('my_weekend_mode') || 'auto';
+  const m = localStorage.getItem('my_weekend_mode');
+  if (!m || m === 'auto') return '7'; // 默认展示完整 7 天（周一至周日）
+  return m;
 }
 
 function setWeekendMode(val) {
   localStorage.setItem('my_weekend_mode', val);
-  filterAndRender();
-  showToast(val === 'auto' ? '已开启周末智能折叠' : (val === '5' ? '已固定5天工作日模式' : '已显示全部7天'), 'info');
+  if (typeof renderAllViewPagerPages === 'function') {
+    const curW = +document.getElementById('weekSelector')?.value || getCurrentWeek();
+    renderAllViewPagerPages(curW);
+  } else {
+    filterAndRender();
+  }
+  showToast(val === '7' ? '已展示完整一周（7天模式）' : (val === '5' ? '已固定5天工作日模式' : '已开启周末智能折叠'), 'info');
 }
 
 function getGhostMode() {
@@ -3111,10 +3134,11 @@ function renderWeekGrid(grid, w) {
     } else {
       const isToday = w === curWeek && i === todayIdx;
       if (isToday) el.classList.add('today');
+      const isWeekend = i === 6 || i === 7;
       const dParts = (dates[i - 1] || '').split('/');
       const dayNum = dParts[1] || dParts[0] || '';
       el.innerHTML = `
-        <div class="day-col-header">
+        <div class="day-col-header ${isWeekend ? 'is-weekend' : ''}">
           <span class="day-name">${weekDayNames[i - 1]}</span>
           <span class="day-date">${dayNum}</span>
         </div>
