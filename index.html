@@ -1634,18 +1634,7 @@
   }
 
   /* ====== ClassIsland 灵动岛呼吸倒计时胶囊 ====== */
-  .dynamic-island-bar {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 2px 10px 4px 10px !important;
-    background: var(--bg) !important; /* 统一主题底色 */
-    cursor: pointer;
-    user-select: none;
-    transition: all 0.25s ease;
-    z-index: 90;
-    border: none !important;
-  }
+  .dynamic-island-bar { display: none !important; }
 
   .dynamic-island-bar:active {
     transform: scale(0.985);
@@ -1965,22 +1954,6 @@
       </button>
     </div>
   </header>
-
-  <!-- ClassIsland 灵动岛呼吸倒计时胶囊栏 (点击可直达课程详情/今日日程) -->
-  <div class="dynamic-island-bar" id="dynamicIslandBar" onclick="onIslandClick()">
-    <div class="dynamic-island-capsule state-free" id="dynamicIsland">
-      <div class="island-dot-box">
-        <span class="island-dot dot-free" id="islandDot"></span>
-      </div>
-      <div class="island-text-box">
-        <span class="island-tag" id="islandTag">状态获取中</span>
-        <span class="island-title" id="islandCourse">地大课表中心</span>
-        <span class="island-room" id="islandRoom"></span>
-      </div>
-      <div class="island-time-badge" id="islandTimeBadge">正在加载...</div>
-      <svg class="island-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-    </div>
-  </div>
 
   <!-- 固定吸顶的周一到周日全景星期栏（支持左右滑周跟手联动） -->
   <div class="weekday-header-viewport" id="weekdayHeaderViewport">
