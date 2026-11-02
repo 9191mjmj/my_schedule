@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.os.Build;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -48,6 +50,18 @@ public class JwxtPlugin extends Plugin {
 
         public JwxtBridge(PluginCall call) {
             this.savedCall = call;
+        }
+
+        @JavascriptInterface
+        public void closeLogin() {
+            getActivity().runOnUiThread(() -> {
+                stopCookiePolling();
+                if (loginDialog != null && loginDialog.isShowing()) {
+                    loginDialog.dismiss();
+                    loginDialog = null;
+                }
+                savedCall.reject("用户关闭了登录窗口");
+            });
         }
 
         @JavascriptInterface
@@ -217,6 +231,22 @@ public class JwxtPlugin extends Plugin {
 
                 webView.setWebViewClient(new WebViewClient() {
                     @Override
+                    public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                        super.onReceivedError(view, errorCode, description, failingUrl);
+                        loadFriendlyNetworkError(view, failingUrl, description);
+                    }
+
+                    @Override
+                    public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                        super.onReceivedError(view, request, error);
+                        if (request != null && request.isForMainFrame()) {
+                            String desc = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && error != null && error.getDescription() != null) ? error.getDescription().toString() : "";
+                            String u = request.getUrl() != null ? request.getUrl().toString() : "";
+                            loadFriendlyNetworkError(view, u, desc);
+                        }
+                    }
+
+                    @Override
                     public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                         String u = request.getUrl().toString();
                         view.loadUrl(u);
@@ -269,6 +299,41 @@ public class JwxtPlugin extends Plugin {
                 call.reject("打开登录窗口失败: " + e.getMessage());
             }
         });
+    }
+
+        private void loadFriendlyNetworkError(WebView view, String failingUrl, String description) {
+        if (view == null) return;
+        String safeUrl = (failingUrl != null) ? failingUrl : "";
+        String html = "<!DOCTYPE html><html><head><meta charset='utf-8'>" +
+                "<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>" +
+                "<style>" +
+                "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; padding: 28px 20px; margin: 0; box-sizing: border-box; text-align: center; }" +
+                ".icon { font-size: 48px; margin: 20px 0 12px; }" +
+                "h2 { font-size: 19px; font-weight: 700; color: #0f172a; margin: 0 0 8px; }" +
+                "p.sub { font-size: 13.5px; color: #64748b; line-height: 1.6; margin: 0 0 20px; }" +
+                ".box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; text-align: left; box-shadow: 0 4px 16px rgba(0,0,0,0.04); margin-bottom: 22px; }" +
+                ".row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; font-size: 13px; line-height: 1.5; color: #334155; }" +
+                ".row:last-child { margin-bottom: 0; }" +
+                ".tag { background: #eff6ff; color: #2563eb; font-weight: bold; font-size: 11px; padding: 2px 7px; border-radius: 6px; flex-shrink: 0; margin-top: 2px; }" +
+                ".btn { display: block; width: 100%; box-sizing: border-box; padding: 13px 0; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 12px; transition: transform 0.1s; }" +
+                ".btn:active { transform: scale(0.98); }" +
+                ".btn-primary { background: #2563eb; color: #ffffff; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }" +
+                ".btn-secondary { background: #f1f5f9; color: #334155; }" +
+                ".url-hint { font-size: 11px; color: #94a3b8; word-break: break-all; margin-top: 14px; }" +
+                "</style></head><body>" +
+                "<div class='icon'>📶</div>" +
+                "<h2>校园内网连接受阻</h2>" +
+                "<p class='sub'>地大教务处（jwgl.cug.edu.cn）受学校防火墙保护，当前 5G/校外网络无法直接访问。</p>" +
+                "<div class='box'>" +
+                "<div class='row'><span class='tag'>方案 1</span><div><b>连接校园网 Wi-Fi</b><br><span style='color:#64748b;'>连接 CUG-WiFi 后点击下方重试。</span></div></div>" +
+                "<div class='row'><span class='tag'>方案 2</span><div><b>使用地大零信任 aTrust VPN</b><br><span style='color:#64748b;'>打开 aTrust (填 <code>vpn.cug.edu.cn</code>) 连入校园内网。</span></div></div>" +
+                "<div class='row'><span class='tag'>方案 3</span><div><b>免联网离线导入</b><br><span style='color:#64748b;'>返回主界面，使用「离线/文件导入」无需连接教务处。</span></div></div>" +
+                "</div>" +
+                "<button class='btn btn-primary' onclick='location.reload()'>🔄 连好网络后刷新重试</button>" +
+                "<button class='btn btn-secondary' onclick='if(window.AppBridge) window.AppBridge.closeLogin(); else history.back();'>🔙 返回主界面</button>" +
+                "<div class='url-hint'>无法访问: " + safeUrl + "</div>" +
+                "</body></html>";
+        view.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
     }
 
     private void triggerClickJw(WebView webView) {
@@ -472,7 +537,13 @@ public class JwxtPlugin extends Plugin {
                     call.reject("教务系统响应状态码错误: " + code);
                 }
             } catch (Exception e) {
-                call.reject("请求教务系统失败: " + e.getMessage());
+                String msg = e.getMessage() != null ? e.getMessage() : "";
+                if (msg.contains("failed to connect") || msg.contains("timed out") || msg.contains("Timeout")
+                        || e instanceof java.net.SocketTimeoutException || e instanceof java.net.ConnectException) {
+                    call.reject("网络连接超时(校外5G/移动网络受限)：地大教务处仅限校园内网直连，请连接校园网Wi-Fi或开启地大aTrust VPN(vpn.cug.edu.cn)后重试。");
+                } else {
+                    call.reject("请求教务系统失败: " + msg);
+                }
             }
         }).start();
     }

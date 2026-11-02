@@ -807,6 +807,104 @@
     box-shadow: 0 0 0 2px #ffffff, 0 6px 16px var(--shadow-c, rgba(0, 0, 0, 0.25));
   }
 
+  .empty-state-card {
+    pointer-events: auto !important;
+    position: relative !important;
+    inset: auto !important;
+    grid-column: 2 / -1 !important;
+    grid-row: 2 / 10 !important;
+    margin: 36px auto !important;
+    max-width: 320px;
+    width: 90%;
+    padding: 24px 18px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    z-index: 10;
+  }
+  .empty-icon-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2px;
+  }
+  .empty-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .empty-subtitle {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .empty-action-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-top: 4px;
+  }
+  .empty-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 12px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .empty-btn:active {
+    transform: scale(0.98);
+  }
+  .empty-btn.primary {
+    background: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  }
+  .empty-btn.secondary {
+    background: var(--surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+  .empty-guide-link {
+    font-size: 12px;
+    color: var(--primary);
+    cursor: pointer;
+    margin-top: 4px;
+    text-decoration: underline;
+    opacity: 0.88;
+  }
+  .offline-drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    padding: 22px 16px;
+    text-align: center;
+    cursor: pointer;
+    background: var(--bg-card);
+    transition: all 0.2s ease;
+  }
+  .offline-drop-zone.dragover, .offline-drop-zone:hover {
+    border-color: var(--primary);
+    background: rgba(37, 99, 235, 0.04);
+  }
+
   .empty-tip {
     position: absolute;
     inset: 0;
@@ -2168,6 +2266,95 @@
       <li><b>个性化外观</b>：支持深浅色模式切换与自定义背景壁纸。</li>
     </ol>
     <p class="warn">🔒 你的学号和密码 <b>绝不会</b> 被第三方保存。App 仅借用内置浏览器完成身份认证，Cookie 安全由学校官方系统管理。</p>
+  </div>
+</div>
+
+<!-- 校园网与 5G 网络指引弹窗 -->
+<div class="modal-overlay" id="networkGuideModal" style="display:none;" onclick="if(event.target===this) closeNetworkGuideModal()">
+  <div class="modal-box" style="width: min(440px, 92vw); padding: 24px 20px;">
+    <button class="modal-close" onclick="closeNetworkGuideModal()">✕</button>
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+      <div style="width:42px; height:42px; border-radius:12px; background:rgba(37,99,235,0.12); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
+        📶
+      </div>
+      <div>
+        <h3 style="margin:0; font-size:17px; font-weight:700; color:var(--text-primary);">校园内网与 5G 连接指引</h3>
+        <p style="margin:2px 0 0; font-size:12px; color:var(--text-muted);">为什么无法直接连上地大教务处？</p>
+      </div>
+    </div>
+
+    <div style="font-size:13px; line-height:1.6; color:var(--text-secondary); background:var(--bg-card); padding:14px; border-radius:14px; border:1px solid var(--border); margin-bottom:14px;">
+      <strong style="color:var(--text-primary);">💡 根本原因：</strong><br>
+      中国地质大学（武汉）教务系统（<code>jwgl.cug.edu.cn</code>）部署在学校内网，防火墙<b>禁止校外外网直连</b>。手机使用 <b>5G/4G 移动数据</b>或校外宽带时，连接 443 端口会被防火墙拦截，导致超时。
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
+      <div style="display:flex; gap:10px; align-items:flex-start; background:var(--surface); padding:12px; border-radius:12px; border:1px solid var(--border);">
+        <span style="background:var(--primary); color:#fff; font-size:11px; font-weight:700; padding:2px 6px; border-radius:6px; flex-shrink:0; margin-top:2px;">方案 1</span>
+        <div style="font-size:12.5px; line-height:1.5;">
+          <strong style="color:var(--text-primary);">连接校园网 Wi-Fi（推荐）</strong><br>
+          <span style="color:var(--text-muted);">在校园内连上 <code>CUG-WiFi</code> 后，点击下方「重试同步」即可一键导课。</span>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:flex-start; background:var(--surface); padding:12px; border-radius:12px; border:1px solid var(--border);">
+        <span style="background:#059669; color:#fff; font-size:11px; font-weight:700; padding:2px 6px; border-radius:6px; flex-shrink:0; margin-top:2px;">方案 2</span>
+        <div style="font-size:12.5px; line-height:1.5;">
+          <strong style="color:var(--text-primary);">使用地大官方 aTrust VPN（校外）</strong><br>
+          <span style="color:var(--text-muted);">手机下载<b>深信服 aTrust</b>，接入地址填 <code>vpn.cug.edu.cn</code>，连入内网后重试。</span>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:flex-start; background:var(--surface); padding:12px; border-radius:12px; border:1px solid var(--border);">
+        <span style="background:#8b5cf6; color:#fff; font-size:11px; font-weight:700; padding:2px 6px; border-radius:6px; flex-shrink:0; margin-top:2px;">方案 3</span>
+        <div style="font-size:12.5px; line-height:1.5;">
+          <strong style="color:var(--text-primary);">免联网离线导入（无需网络）</strong><br>
+          <span style="color:var(--text-muted);">支持导入 <b>WakeUp 课程表 JSON</b>、<b>ICS 日历文件</b> 或 <b>粘贴课表数据</b>。</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px;">
+      <button class="btn ghost" style="flex:1; justify-content:center;" onclick="closeNetworkGuideModal()">知道了</button>
+      <button class="btn secondary" style="flex:1.2; justify-content:center;" onclick="closeNetworkGuideModal(); openOfflineImportModal();">📂 离线导入</button>
+      <button class="btn primary" style="flex:1.2; justify-content:center;" onclick="closeNetworkGuideModal(); loadSchedule();">🔄 重试同步</button>
+    </div>
+  </div>
+</div>
+
+<!-- 离线与免联网导入弹窗 -->
+<div class="modal-overlay" id="offlineImportModal" style="display:none;" onclick="if(event.target===this) closeOfflineImportModal()">
+  <div class="modal-box" style="width: min(480px, 94vw); padding: 24px 20px;">
+    <button class="modal-close" onclick="closeOfflineImportModal()">✕</button>
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <div style="width:42px; height:42px; border-radius:12px; background:rgba(139,92,246,0.12); color:#8b5cf6; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
+        📂
+      </div>
+      <div>
+        <h3 style="margin:0; font-size:17px; font-weight:700; color:var(--text-primary);">免联网离线导入课表</h3>
+        <p style="margin:2px 0 0; font-size:12px; color:var(--text-muted);">支持 WakeUp 课程表、ICS 日历与文本粘贴</p>
+      </div>
+    </div>
+
+    <input type="file" id="offlineFileInput" accept=".json,.ics,.txt" style="display:none;" onchange="handleOfflineFileSelected(this)">
+    <div class="offline-drop-zone" onclick="document.getElementById('offlineFileInput').click()" ondragover="event.preventDefault(); this.classList.add('dragover');" ondragleave="this.classList.remove('dragover');" ondrop="handleOfflineDrop(event)">
+      <div style="font-size:32px; margin-bottom:8px;">📄</div>
+      <div style="font-size:14px; font-weight:600; color:var(--text-primary);">点击选择文件 或 将文件拖拽至此处</div>
+      <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">支持 WakeUp 导出的 .json、日历 .ics、备份 .json</div>
+    </div>
+
+    <div style="margin-top:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <span style="font-size:12px; font-weight:600; color:var(--text-secondary);">或者直接粘贴 JSON / HTML 文本：</span>
+        <button type="button" class="btn text-btn" style="font-size:11px; padding:2px 6px; cursor:pointer;" onclick="loadDemoSchedulePreview()">🧪 载入地大体验示例课表</button>
+      </div>
+      <textarea id="offlinePasteArea" placeholder="在此粘贴 WakeUp 导出的 JSON、教务系统 kbList 原始数据或 ICS 文本..." style="width:100%; height:90px; box-sizing:border-box; border-radius:10px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-primary); font-family:monospace; font-size:12px; padding:10px; resize:none;"></textarea>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:16px;">
+      <button class="btn ghost" style="flex:1; justify-content:center;" onclick="closeOfflineImportModal()">取消</button>
+      <button class="btn primary" style="flex:1.5; justify-content:center;" onclick="submitOfflineImport()">✨ 立即解析导入</button>
+    </div>
   </div>
 </div>
 
@@ -3574,6 +3761,214 @@ async function fetchScheduleWithCookie(jsessionid, silent = false, fullCookies =
     if (!silent) showToast('抓取出错：' + e.message, 'error', 4000);
     return false;
   }
+}
+
+
+// ============ 校园网/5G 网络指引与离线导入核心系统 ============
+function isNetworkIntranetError(err) {
+  const str = (err && (err.message || String(err))) || '';
+  return /connect|timed\s*out|timeout|ERR_CONNECTION|SocketTimeout|ConnectException|443|refused|unreachable|校外5G|内网访问/i.test(str);
+}
+
+function openNetworkGuideModal(errText) {
+  const modal = document.getElementById('networkGuideModal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeNetworkGuideModal() {
+  const modal = document.getElementById('networkGuideModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function openOfflineImportModal() {
+  const modal = document.getElementById('offlineImportModal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeOfflineImportModal() {
+  const modal = document.getElementById('offlineImportModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function handleOfflineFileSelected(input) {
+  if (!input || !input.files || input.files.length === 0) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    parseAndImportSchedule(text);
+  };
+  reader.readAsText(file);
+}
+
+function handleOfflineDrop(event) {
+  event.preventDefault();
+  event.currentTarget.classList.remove('dragover');
+  if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+    const file = event.dataTransfer.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      parseAndImportSchedule(e.target.result);
+    };
+    reader.readAsText(file);
+  }
+}
+
+function submitOfflineImport() {
+  const text = (document.getElementById('offlinePasteArea').value || '').trim();
+  if (!text) {
+    showToast('请先选择文件或在输入框中粘贴课表数据', 'warn', 2500);
+    return;
+  }
+  parseAndImportSchedule(text);
+}
+
+function normalizeImportedCourses(data) {
+  let list = [];
+  if (Array.isArray(data)) {
+    list = data;
+  } else if (data && Array.isArray(data.courses)) {
+    list = data.courses;
+  } else if (data && Array.isArray(data.kbList)) {
+    list = data.kbList;
+  } else if (data && data.data && Array.isArray(data.data.courses)) {
+    list = data.data.courses;
+  } else if (data && data.data && Array.isArray(data.data.kbList)) {
+    list = data.data.kbList;
+  }
+
+  if (!list || list.length === 0) return null;
+
+  return list.map((item, idx) => {
+    if (item.kcmc && item.jcs && item.xqj) {
+      return {
+        kcmc: String(item.kcmc || '').trim(),
+        cdmc: String(item.cdmc || '').trim(),
+        xm: String(item.xm || '').trim(),
+        xqj: String(item.xqj || '1'),
+        jcs: String(item.jcs || '1-2'),
+        zcd: String(item.zcd || '1-16周'),
+        kch: item.kch || '',
+        xf: item.xf || ''
+      };
+    }
+    const name = item.name || item.courseName || item.kcmc || ('课程 ' + (idx + 1));
+    const room = item.room || item.classroom || item.cdmc || '';
+    const teacher = item.teacher || item.teacherName || item.xm || '';
+    const day = String(item.day || item.weekday || item.xqj || 1);
+    
+    let jcs = item.jcs || '';
+    if (!jcs) {
+      const start = item.startNode || item.startSection || item.sectionStart || 1;
+      const step = item.step || item.sectionCount || item.length || 2;
+      jcs = start + '-' + (+start + +step - 1);
+    }
+
+    let zcd = item.zcd || '';
+    if (!zcd) {
+      const sw = item.startWeek || 1;
+      const ew = item.endWeek || 16;
+      const type = item.type !== undefined ? item.type : 0;
+      const tag = type === 1 ? '(单)' : (type === 2 ? '(双)' : '');
+      zcd = sw + '-' + ew + '周' + tag;
+    }
+
+    return {
+      kcmc: name,
+      cdmc: room,
+      xm: teacher,
+      xqj: day,
+      jcs: jcs,
+      zcd: zcd,
+      kch: item.kch || '',
+      xf: item.xf || ''
+    };
+  });
+}
+
+function parseAndImportSchedule(text) {
+  if (!text) return;
+  text = text.trim();
+  let normalized = null;
+
+  // 1. 尝试 JSON 解析 (WakeUp / JWXT / 备份)
+  if (text.startsWith('{') || text.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(text);
+      normalized = normalizeImportedCourses(parsed);
+    } catch (e) {
+      console.warn('JSON 解析失败，尝试正则提取:', e);
+    }
+  }
+
+  // 2. 尝试从 HTML 或脚本中提取 JSON
+  if (!normalized && (text.includes('kbList') || text.includes('courses'))) {
+    try {
+      const m = text.match(/"kbList"\s*:\s*(\[.*?\])/s) || text.match(/"courses"\s*:\s*(\[.*?\])/s);
+      if (m && m[1]) {
+        const parsed = JSON.parse(m[1]);
+        normalized = normalizeImportedCourses(parsed);
+      }
+    } catch(err) {}
+  }
+
+  // 3. 尝试 iCalendar (.ics) 解析
+  if (!normalized && text.includes('BEGIN:VCALENDAR')) {
+    try {
+      const events = text.split('BEGIN:VEVENT');
+      const list = [];
+      events.slice(1).forEach((ev, i) => {
+        const sumMatch = ev.match(/SUMMARY:(.*?)(?:\r?\n|$)/);
+        const locMatch = ev.match(/LOCATION:(.*?)(?:\r?\n|$)/);
+        const descMatch = ev.match(/DESCRIPTION:(.*?)(?:\r?\n|$)/);
+        if (sumMatch) {
+          list.push({
+            name: sumMatch[1].replace(/\\,/g, ',').trim(),
+            room: locMatch ? locMatch[1].replace(/\\,/g, ',').trim() : '',
+            teacher: descMatch ? descMatch[1].replace(/\\,/g, ',').trim() : '',
+            day: (i % 7) + 1,
+            startNode: 1,
+            step: 2,
+            startWeek: 1,
+            endWeek: 16
+          });
+        }
+      });
+      normalized = normalizeImportedCourses(list);
+    } catch(err) {}
+  }
+
+  if (normalized && normalized.length > 0) {
+    allCourses = normalized;
+    try {
+      localStorage.setItem('my_schedule_cache', JSON.stringify(allCourses));
+      localStorage.setItem('my_schedule_cache_time', new Date().toLocaleString());
+    } catch (err) {}
+    closeOfflineImportModal();
+    initWeekSelector();
+    filterAndRender();
+    showToast('🎉 离线导入成功！共导入 ' + allCourses.length + ' 门课程', 'success', 3500);
+  } else {
+    showToast('未能识别有效课程数据，请检查文件或文本内容', 'error', 3500);
+  }
+}
+
+function loadDemoSchedulePreview() {
+  const demoCourses = [
+    { kcmc: "高等数学A(1)", cdmc: "教三楼 201", xm: "张华教授", xqj: "1", jcs: "1-2", zcd: "1-16周" },
+    { kcmc: "大学物理B", cdmc: "教一楼 102", xm: "李志刚", xqj: "1", jcs: "3-4", zcd: "1-16周" },
+    { kcmc: "地质学基础", cdmc: "主楼 305", xm: "王明远", xqj: "2", jcs: "1-2", zcd: "1-16周" },
+    { kcmc: "大学英语(3)", cdmc: "教二楼 401", xm: "陈晓", xqj: "2", jcs: "5-6", zcd: "1-16周" },
+    { kcmc: "程序设计基础(C++)", cdmc: "机电楼 机房2", xm: "赵老师", xqj: "3", jcs: "3-4", zcd: "1-16周" },
+    { kcmc: "线性代数", cdmc: "教三楼 105", xm: "孙教授", xqj: "3", jcs: "7-8", zcd: "1-16周" },
+    { kcmc: "马克思主义基本原理", cdmc: "综合楼 108", xm: "刘老师", xqj: "4", jcs: "1-2", zcd: "1-16周" },
+    { kcmc: "地质认识实习研讨", cdmc: "主楼 202", xm: "周教授", xqj: "4", jcs: "5-6", zcd: "1-8周" },
+    { kcmc: "工程制图与CAD", cdmc: "教二楼 208", xm: "吴老师", xqj: "5", jcs: "3-4", zcd: "1-16周" },
+    { kcmc: "大学体育(4)-网球", cdmc: "西区风雨操场", xm: "郑教练", xqj: "5", jcs: "7-8", zcd: "1-16周" },
+    { kcmc: "学术前沿讲座", cdmc: "弘毅堂", xm: "特邀学者", xqj: "6", jcs: "9-10", zcd: "2-12周(双)" }
+  ];
+  document.getElementById('offlinePasteArea').value = JSON.stringify({ courses: demoCourses }, null, 2);
+  showToast('已载入地大体验示例课表，点击下方「立即解析导入」即可生效 ✨', 'info', 3000);
 }
 
 // ============ 登录覆盖层与 Cookie 监听 ============
